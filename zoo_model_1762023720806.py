@@ -165,10 +165,9 @@ class ZooAIModel:
             normal_behaviour_details=None,
             feed_and_supplements_available=True,
             feed_given_as_prescribed=True,
-            other_animal_requirements=(observation_text[:200] + "..." 
-                                       if len(observation_text) > 200 else observation_text),
+            other_animal_requirements=observation_text,  # Full text, no truncation
             incharge_signature="Zoo Keeper",
-            daily_animal_health_monitoring=f"Observation recorded on {date}: {observation_text[:100]}{'...' if len(observation_text) > 100 else ''}",
+            daily_animal_health_monitoring=f"Observation recorded on {date}: {observation_text}",  # Full text
             carnivorous_animal_feeding_chart="Standard feeding schedule followed",
             medicine_stock_register="Stock levels adequate",
             daily_wildlife_monitoring=f"Wildlife monitoring completed on {date}"
