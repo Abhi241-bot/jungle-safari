@@ -1,17 +1,31 @@
 import React, { useContext, useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config';
 import axios from 'axios';
+import { API_BASE_URL } from '../config';
 import { AppContext, User as AppUser } from '../App';
+import { API_BASE_URL } from '../config';
 import { mockAnimals, translations } from './mockData';
+import { API_BASE_URL } from '../config';
 import { ArrowLeft, Send, Loader, AlertTriangle, Server, Mic, Square, Play, Trash2, FileText, HeartPulse, Camera, Video, Share2, Smile, Meh, Frown, Angry, User } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 import { Button } from './ui/button';
+import { API_BASE_URL } from '../config';
 import { Card } from './ui/card';
+import { API_BASE_URL } from '../config';
 import { Textarea } from './ui/textarea';
-import { Label } from './ui/label'; // This import was missing
+import { API_BASE_URL } from '../config';
+import { Label } from './ui/label';
+import { API_BASE_URL } from '../config'; // This import was missing
 import { toast } from 'sonner';
-import { Input } from './ui/input'; // For file inputs
+import { API_BASE_URL } from '../config';
+import { Input } from './ui/input';
+import { API_BASE_URL } from '../config'; // For file inputs
 import { useReactMediaRecorder } from 'react-media-recorder';
+import { API_BASE_URL } from '../config';
 import { motion } from 'motion/react';
+import { API_BASE_URL } from '../config';
 import { Checkbox } from './ui/checkbox';
+import { API_BASE_URL } from '../config';
 
 // Define the structure of the data returned from the API
 interface ProcessedData {
@@ -59,7 +73,6 @@ export function DailyLogEntry() {
     onStop: (blobUrl, blob) => handleAudioTranscription(blob)
   });
 
-  const API_BASE_URL = 'http://127.0.0.1:5000';
 
   const animal = selectedAnimal || mockAnimals[0];
 

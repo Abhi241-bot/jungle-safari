@@ -1,20 +1,37 @@
 import React, { useContext, useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config';
 import axios from 'axios';
+import { API_BASE_URL } from '../config';
 import { AppContext, User } from '../App';
+import { API_BASE_URL } from '../config';
 import { translations } from './mockData';
+import { API_BASE_URL } from '../config';
 import { ArrowLeft, UserPlus, Edit, Trash2, Shield } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 import { motion } from 'motion/react';
+import { API_BASE_URL } from '../config';
 import { Button } from './ui/button';
+import { API_BASE_URL } from '../config';
 import { Card } from './ui/card';
+import { API_BASE_URL } from '../config';
 import { Badge } from './ui/badge';
+import { API_BASE_URL } from '../config';
 import { Switch } from './ui/switch';
+import { API_BASE_URL } from '../config';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from './ui/dialog';
+import { API_BASE_URL } from '../config';
 import { Input } from './ui/input';
+import { API_BASE_URL } from '../config';
 import { Label } from './ui/label';
+import { API_BASE_URL } from '../config';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { API_BASE_URL } from '../config';
 import { Checkbox } from './ui/checkbox';
+import { API_BASE_URL } from '../config';
 import { toast } from 'sonner';
+import { API_BASE_URL } from '../config';
 import { Loader, AlertTriangle } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 export function UserManagement() {
   const { language, setCurrentScreen } = useContext(AppContext);
@@ -25,7 +42,6 @@ export function UserManagement() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const API_BASE_URL = 'http://127.0.0.1:5000';
 
   const fetchUsers = async () => {
     try {

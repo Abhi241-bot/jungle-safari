@@ -1,14 +1,25 @@
 import React, { useContext, useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config';
 import axios from 'axios';
+import { API_BASE_URL } from '../config';
 import { AppContext, Animal } from '../App';
+import { API_BASE_URL } from '../config';
 import { translations } from './mockData';
+import { API_BASE_URL } from '../config';
 import { Button } from './ui/button';
+import { API_BASE_URL } from '../config';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
+import { API_BASE_URL } from '../config';
 import { Textarea } from './ui/textarea';
+import { API_BASE_URL } from '../config';
 import { Label } from './ui/label';
+import { API_BASE_URL } from '../config';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { API_BASE_URL } from '../config';
 import { toast } from 'sonner';
+import { API_BASE_URL } from '../config';
 import { AlertTriangle, X } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 export function SOSModal() {
   const { currentUser, language, showSOS, setShowSOS } = useContext(AppContext);
@@ -19,7 +30,6 @@ export function SOSModal() {
   const [message, setMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
 
-  const API_BASE_URL = 'http://127.0.0.1:5000';
 
   useEffect(() => {
     if (showSOS) {

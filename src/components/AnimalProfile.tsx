@@ -1,15 +1,27 @@
 import React, { useContext, useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config';
 import axios from 'axios';
+import { API_BASE_URL } from '../config';
 import { AppContext } from '../App';
+import { API_BASE_URL } from '../config';
 import { translations } from './mockData';
+import { API_BASE_URL } from '../config';
 import { ArrowLeft, Calendar, Activity, Heart, TrendingUp, FileText } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 import { motion } from 'motion/react';
+import { API_BASE_URL } from '../config';
 import { Button } from './ui/button';
+import { API_BASE_URL } from '../config';
 import { Card } from './ui/card';
+import { API_BASE_URL } from '../config';
 import { Badge } from './ui/badge';
+import { API_BASE_URL } from '../config';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+import { API_BASE_URL } from '../config';
 import { ImageWithFallback } from './figma/ImageWithFallback';
+import { API_BASE_URL } from '../config';
 import { Loader } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 interface LogEntry {
   id: string;
@@ -27,7 +39,6 @@ export function AnimalProfile() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const API_BASE_URL = 'http://127.0.0.1:5000';
 
   if (!selectedAnimal) return null;
 

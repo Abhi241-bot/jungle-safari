@@ -1,19 +1,35 @@
 import React, { useContext, useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config';
 import axios from 'axios';
+import { API_BASE_URL } from '../config';
 import { AppContext, Animal, Alert as AlertType } from '../App';
+import { API_BASE_URL } from '../config';
 import { translations } from './mockData';
+import { API_BASE_URL } from '../config';
 import { AlertCircle, Bell, Plus, Search, Menu, AlertTriangle, Calendar, History, Home, List, Settings, ClipboardList } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 import { motion } from 'motion/react';
+import { API_BASE_URL } from '../config';
 import { Button } from './ui/button';
+import { API_BASE_URL } from '../config';
 import { Card } from './ui/card';
+import { API_BASE_URL } from '../config';
 import { Input } from './ui/input';
+import { API_BASE_URL } from '../config';
 import { Badge } from './ui/badge';
+import { API_BASE_URL } from '../config';
 import { AnimalCard } from './AnimalCard';
+import { API_BASE_URL } from '../config';
 import { TaskWidget } from './TaskWidget';
+import { API_BASE_URL } from '../config';
 import { ImageWithFallback } from './figma/ImageWithFallback';
+import { API_BASE_URL } from '../config';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet';
+import { API_BASE_URL } from '../config';
 import { Loader } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 import { toast } from 'sonner';
+import { API_BASE_URL } from '../config';
 
 export function ZookeeperDashboard() {
   const { currentUser, language, setCurrentScreen, setSelectedAnimal, setShowSOS } = useContext(AppContext);
@@ -28,7 +44,6 @@ export function ZookeeperDashboard() {
   const [alerts, setAlerts] = useState<AlertType[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  const API_BASE_URL = 'http://127.0.0.1:5000';
 
   useEffect(() => {
     const fetchData = async () => {
