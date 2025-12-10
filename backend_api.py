@@ -502,18 +502,36 @@ def process_text_observation():
         return jsonify({"error": "Missing observation text"}), 400
 
     # --- Media File Upload ---
-    media_urls = {}
-    for key in ['gateImage', 'animalImage', 'animalVideo']:
-        if key in request.files:
-            file = request.files[key]
+    # Upload files and add URLs directly to data with correct field names
+    if 'gateImage' in request.files:
+        file = request.files['gateImage']
+        if file.filename:
             try:
                 upload_result = cloudinary.uploader.upload(file, resource_type="auto")
-                media_urls[key + 'Url'] = upload_result['secure_url']
-                print(f"✅ Successfully uploaded {key} to Cloudinary.")
+                data['gateImageUrl'] = upload_result['secure_url']
+                print(f"✅ Successfully uploaded gateImage to Cloudinary.")
             except Exception as e:
-                print(f"⚠️ Cloudinary upload failed for {key}: {e}")
+                print(f"⚠️ Cloudinary upload failed for gateImage: {e}")
     
-    data.update(media_urls) # Add URLs to the data payload
+    if 'animalImage' in request.files:
+        file = request.files['animalImage']
+        if file.filename:
+            try:
+                upload_result = cloudinary.uploader.upload(file, resource_type="auto")
+                data['imageUrl'] = upload_result['secure_url']  # LogHistory expects 'imageUrl'
+                print(f"✅ Successfully uploaded animalImage to Cloudinary.")
+            except Exception as e:
+                print(f"⚠️ Cloudinary upload failed for animalImage: {e}")
+    
+    if 'animalVideo' in request.files:
+        file = request.files['animalVideo']
+        if file.filename:
+            try:
+                upload_result = cloudinary.uploader.upload(file, resource_type="video")
+                data['videoUrl'] = upload_result['secure_url']  # LogHistory expects 'videoUrl'
+                print(f"✅ Successfully uploaded animalVideo to Cloudinary.")
+            except Exception as e:
+                print(f"⚠️ Cloudinary upload failed for animalVideo: {e}")
 
     # --- AI Processing ---
     animal_name = "Unknown"
@@ -528,8 +546,9 @@ def process_text_observation():
     try:
         ai_summary = zoo_model.process_observation(observation_text, data['createdAt'], animal_name)
         
-        # Add the AI summary to the data received from the frontend
-        data['aiSummary'] = ai_summary.model_dump()
+        # Merge AI summary fields directly into data (not nested)
+        ai_data = ai_summary.model_dump()
+        data.update(ai_data)  # This merges AI fields directly into the main data object
 
         # --- Automatic Alert Generation ---
         # If health status is 'poor', create a high-priority alert
