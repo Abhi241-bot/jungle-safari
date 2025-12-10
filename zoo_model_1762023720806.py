@@ -35,7 +35,7 @@ class ZooAIModel:
         gem_key = os.environ.get("GEMINI_API_KEY")
         if gem_key:
             genai.configure(api_key=gem_key)
-            self.llm = genai.GenerativeModel("gemini-1.5-flash-latest")
+            self.llm = genai.GenerativeModel("gemini-1.5-flash")  # Fixed: removed '-latest'
         else:
             self.llm = None
 
