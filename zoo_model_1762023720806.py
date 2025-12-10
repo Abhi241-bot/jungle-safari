@@ -107,17 +107,36 @@ class ZooAIModel:
                 return self._create_fallback_data(observation_text, date)
 
             enhanced_observation = f"Date: {date}\nObservation: {observation_text}"
-            response = self.llm.generate_content(
-                self.prompt.format(observation=enhanced_observation, animal_name=animal_name)
-            )
+            
+            # Use direct REST API instead of SDK to avoid version issues
+            gem_key = os.environ.get("GEMINI_API_KEY")
+            if gem_key:
+                import requests
+                url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={gem_key}"
+                
+                headers = {"Content-Type": "application/json"}
+                payload = {
+                    "contents": [{
+                        "parts": [{
+                            "text": self.prompt.format(observation=enhanced_observation, animal_name=animal_name)
+                        }]
+                    }]
+                }
+                
+                response = requests.post(url, json=payload, headers=headers)
+                response.raise_for_status()
+                
+                result_data = response.json()
+                json_text = result_data.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "")
+                
+                result = self.parser.parse(json_text)
+                
+                if hasattr(result, "date_or_day"):
+                    result.date_or_day = date
 
-            json_text = getattr(response, "text", None) or ""
-            result = self.parser.parse(json_text)
-
-            if hasattr(result, "date_or_day"):
-                result.date_or_day = date
-
-            return result
+                return result
+            else:
+                return self._create_fallback_data(observation_text, date)
 
         except Exception as e:
             print(f"Error processing observation: {e}")
