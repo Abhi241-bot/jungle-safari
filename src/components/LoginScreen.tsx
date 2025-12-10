@@ -9,6 +9,7 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { toast } from 'sonner';
 import logoImage from 'figma:asset/86b32134fefcfd1528280a615844f028e9ba1790.png';
+import { API_BASE_URL } from '../config';
 
 type LoginStep = 'role' | 'name' | 'password';
 
@@ -21,8 +22,6 @@ export function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [availableUsers, setAvailableUsers] = useState<User[]>([]);
-
-  const API_BASE_URL = 'http://127.0.0.1:5000';
 
   const roles = [
     {
