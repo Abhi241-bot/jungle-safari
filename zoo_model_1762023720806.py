@@ -110,8 +110,8 @@ class ZooAIModel:
             if gem_key:
                 import requests
                 
-                # Using gemini-pro with v1beta endpoint
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={gem_key}"
+                # Using gemini-2.0-flash-exp (newer model, better availability)
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key={gem_key}"
                 
                 headers = {"Content-Type": "application/json"}
                 payload = {
