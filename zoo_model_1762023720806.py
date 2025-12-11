@@ -110,8 +110,8 @@ class ZooAIModel:
             if hf_key:
                 import requests
                 
-                # Using Mistral model on Hugging Face (free inference)
-                url = "https://api-inference.huggingface.co/models/mistralai/Mixtral-8x7B-Instruct-v0.1"
+                # Using Llama 3.2 model on Hugging Face (stable and actively maintained)
+                url = "https://api-inference.huggingface.co/models/meta-llama/Llama-3.2-3B-Instruct"
                 
                 headers = {
                     "Authorization": f"Bearer {hf_key}",
