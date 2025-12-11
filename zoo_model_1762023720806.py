@@ -103,9 +103,6 @@ class ZooAIModel:
     def process_observation(self, observation_text, date, animal_name="Unknown"):
         """Convert text observation into structured data using Gemini."""
         try:
-            if not self.llm:
-                return self._create_fallback_data(observation_text, date)
-
             enhanced_observation = f"Date: {date}\nObservation: {observation_text}"
             
             # Use direct REST API instead of SDK to avoid version issues
@@ -142,6 +139,7 @@ class ZooAIModel:
         except Exception as e:
             print(f"Error processing observation: {e}")
             return self._create_fallback_data(observation_text, date)
+
 
     def process_audio_observation(self, audio_bytes, date, content_type="audio/webm", animal_name="Unknown"):
         """Transcribe audio and process observation."""
