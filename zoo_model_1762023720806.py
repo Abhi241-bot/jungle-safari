@@ -98,35 +98,50 @@ class ZooAIModel:
             return f"Error in audio transcription: {str(e)}"
 
     # ----------------------------
-    # Gemini Processing
+    # AI Processing with Hugging Face
     # ----------------------------
     def process_observation(self, observation_text, date, animal_name="Unknown"):
-        """Convert text observation into structured data using Gemini."""
+        """Convert text observation into structured data using Hugging Face."""
         try:
             enhanced_observation = f"Date: {date}\nObservation: {observation_text}"
             
-            # Use direct REST API instead of SDK to avoid version issues
-            gem_key = os.environ.get("GEMINI_API_KEY")
-            if gem_key:
+            # Use Hugging Face Inference API (free, no enablement needed)
+            hf_key = os.environ.get("HUGGINGFACE_API_KEY") or os.environ.get("GEMINI_API_KEY")
+            if hf_key:
                 import requests
-                # Try gemini-1.5-pro with v1 endpoint
-                url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key={gem_key}"
                 
-                headers = {"Content-Type": "application/json"}
-                payload = {
-                    "contents": [{
-                        "parts": [{
-                            "text": self.prompt.format(observation=enhanced_observation, animal_name=animal_name)
-                        }]
-                    }]
+                # Using Mistral model on Hugging Face (free inference)
+                url = "https://api-inference.huggingface.co/models/mistralai/Mixtral-8x7B-Instruct-v0.1"
+                
+                headers = {
+                    "Authorization": f"Bearer {hf_key}",
+                    "Content-Type": "application/json"
                 }
                 
-                response = requests.post(url, json=payload, headers=headers)
+                # Create prompt for the model
+                prompt_text = self.prompt.format(observation=enhanced_observation, animal_name=animal_name)
+                
+                payload = {
+                    "inputs": prompt_text,
+                    "parameters": {
+                        "max_new_tokens": 1000,
+                        "temperature": 0.7,
+                        "return_full_text": False
+                    }
+                }
+                
+                response = requests.post(url, json=payload, headers=headers, timeout=30)
                 response.raise_for_status()
                 
                 result_data = response.json()
-                json_text = result_data.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "")
                 
+                # Extract generated text
+                if isinstance(result_data, list) and len(result_data) > 0:
+                    json_text = result_data[0].get("generated_text", "")
+                else:
+                    json_text = ""
+                
+                # Try to parse the JSON response
                 result = self.parser.parse(json_text)
                 
                 if hasattr(result, "date_or_day"):
