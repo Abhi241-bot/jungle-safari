@@ -98,52 +98,36 @@ class ZooAIModel:
             return f"Error in audio transcription: {str(e)}"
 
     # ----------------------------
-    # AI Processing with OpenAI
+    # AI Processing with Gemini
     # ----------------------------
     def process_observation(self, observation_text, date, animal_name="Unknown"):
-        """Convert text observation into structured data using OpenAI GPT-3.5."""
+        """Convert text observation into structured data using Gemini AI."""
         try:
             enhanced_observation = f"Date: {date}\nObservation: {observation_text}"
             
-            # Use OpenAI API (most reliable option)
-            openai_key = os.environ.get("OPENAI_API_KEY") or os.environ.get("GEMINI_API_KEY") or os.environ.get("HUGGINGFACE_API_KEY")
-            if openai_key:
+            # Use Gemini API
+            gem_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("OPENAI_API_KEY") or os.environ.get("HUGGINGFACE_API_KEY")
+            if gem_key:
                 import requests
                 
-                # Using OpenAI GPT-3.5-turbo (fast, reliable, affordable)
-                url = "https://api.openai.com/v1/chat/completions"
+                # Using gemini-pro with v1beta endpoint
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={gem_key}"
                 
-                headers = {
-                    "Authorization": f"Bearer {openai_key}",
-                    "Content-Type": "application/json"
-                }
-                
-                # Create prompt for the model
-                prompt_text = self.prompt.format(observation=enhanced_observation, animal_name=animal_name)
-                
+                headers = {"Content-Type": "application/json"}
                 payload = {
-                    "model": "gpt-3.5-turbo",
-                    "messages": [
-                        {
-                            "role": "system",
-                            "content": "You are a zoo management AI assistant that structures animal observation data into JSON format."
-                        },
-                        {
-                            "role": "user",
-                            "content": prompt_text
-                        }
-                    ],
-                    "temperature": 0.7,
-                    "max_tokens": 1000
+                    "contents": [{
+                        "parts": [{
+                            "text": self.prompt.format(observation=enhanced_observation, animal_name=animal_name)
+                        }]
+                    }]
                 }
                 
                 response = requests.post(url, json=payload, headers=headers, timeout=30)
                 response.raise_for_status()
                 
                 result_data = response.json()
-                json_text = result_data.get("choices", [{}])[0].get("message", {}).get("content", "")
+                json_text = result_data.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "")
                 
-                # Try to parse the JSON response
                 result = self.parser.parse(json_text)
                 
                 if hasattr(result, "date_or_day"):
