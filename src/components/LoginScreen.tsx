@@ -8,7 +8,6 @@ import { Card } from './ui/card';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { toast } from 'sonner';
-import logoImage from 'figma:asset/86b32134fefcfd1528280a615844f028e9ba1790.png';
 import { API_BASE_URL } from '../config';
 
 type LoginStep = 'role' | 'name' | 'password';
@@ -147,12 +146,12 @@ export function LoginScreen() {
         {/* Logo and Title */}
         <div className="text-center mb-12">
           <motion.div
-            animate={{ rotate: [0, 10, -10, 0] }}
-            transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
-            className="inline-block mb-4"
+            animate={{ rotate: [0, 5, -5, 0] }}
+            transition={{ duration: 3, repeat: Infinity, repeatDelay: 2 }}
+            className="inline-block mb-6"
           >
-            <div className="w-24 h-24 bg-gradient-to-br from-amber-100 via-orange-50 to-teal-100 rounded-full flex items-center justify-center shadow-xl overflow-hidden border-4 border-emerald-200">
-              <img src={logoImage} alt="Jungle Safari" className="w-full h-full object-cover rounded-full" />
+            <div className="w-48 h-24 flex items-center justify-center">
+              <img src="/logo.png" alt="Jungle Safari Logo" className="w-full h-full object-contain drop-shadow-2xl" />
             </div>
           </motion.div>
           <h1 className="text-green-900 mb-2">Jungle Safari</h1>
