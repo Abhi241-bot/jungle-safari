@@ -544,11 +544,17 @@ def process_text_observation():
             print(f"⚠️ Could not fetch animal name for ID {animal_id}: {e}")
 
     try:
+        # Store the original observation text before AI processing
+        original_observation_text = observation_text
+        
         ai_summary = zoo_model.process_observation(observation_text, data['createdAt'], animal_name)
         
         # Merge AI summary fields directly into data (not nested)
         ai_data = ai_summary.model_dump()
         data.update(ai_data)  # This merges AI fields directly into the main data object
+        
+        # Preserve the original observation text (AI model doesn't return this)
+        data['observationText'] = original_observation_text
 
         # --- Automatic Alert Generation ---
         # If health status is 'poor', create a high-priority alert
