@@ -127,8 +127,8 @@ class ZooAIModel:
                 credentials.refresh(Request())
                 access_token = credentials.token
                 
-                # Using gemini-1.5-flash with service account
-                url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
+                # Using gemini-2.5-flash-lite (best free tier availability in 2025)
+                url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent"
                 
                 headers = {
                     "Authorization": f"Bearer {access_token}",
@@ -160,7 +160,7 @@ class ZooAIModel:
                 # Fallback to API key authentication
                 import requests
                 
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key={api_key}"
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key={api_key}"
                 
                 headers = {"Content-Type": "application/json"}
                 payload = {
