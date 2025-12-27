@@ -127,8 +127,8 @@ class ZooAIModel:
                 credentials.refresh(Request())
                 access_token = credentials.token
                 
-                # Using gemini-1.5-pro-latest with service account
-                url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent"
+                # Using gemini-1.5-flash with service account
+                url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
                 
                 headers = {
                     "Authorization": f"Bearer {access_token}",
