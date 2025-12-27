@@ -98,20 +98,69 @@ class ZooAIModel:
             return f"Error in audio transcription: {str(e)}"
 
     # ----------------------------
-    # AI Processing with Gemini
+    # AI Processing with Gemini (Service Account)
     # ----------------------------
     def process_observation(self, observation_text, date, animal_name="Unknown"):
         """Convert text observation into structured data using Gemini AI."""
         try:
             enhanced_observation = f"Date: {date}\nObservation: {observation_text}"
             
-            # Use Gemini API
-            gem_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("OPENAI_API_KEY") or os.environ.get("HUGGINGFACE_API_KEY")
-            if gem_key:
+            # Try service account first, then fall back to API key
+            service_account_json = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON")
+            api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("OPENAI_API_KEY") or os.environ.get("HUGGINGFACE_API_KEY")
+            
+            if service_account_json:
+                # Use service account authentication
+                import json
+                import requests
+                from google.oauth2 import service_account
+                from google.auth.transport.requests import Request
+                
+                # Parse service account credentials
+                credentials_dict = json.loads(service_account_json)
+                credentials = service_account.Credentials.from_service_account_info(
+                    credentials_dict,
+                    scopes=['https://www.googleapis.com/auth/generative-language']
+                )
+                
+                # Get access token
+                credentials.refresh(Request())
+                access_token = credentials.token
+                
+                # Using gemini-1.5-pro-latest with service account
+                url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent"
+                
+                headers = {
+                    "Authorization": f"Bearer {access_token}",
+                    "Content-Type": "application/json"
+                }
+                
+                payload = {
+                    "contents": [{
+                        "parts": [{
+                            "text": self.prompt.format(observation=enhanced_observation, animal_name=animal_name)
+                        }]
+                    }]
+                }
+                
+                response = requests.post(url, json=payload, headers=headers, timeout=30)
+                response.raise_for_status()
+                
+                result_data = response.json()
+                json_text = result_data.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "")
+                
+                result = self.parser.parse(json_text)
+                
+                if hasattr(result, "date_or_day"):
+                    result.date_or_day = date
+
+                return result
+                
+            elif api_key:
+                # Fallback to API key authentication
                 import requests
                 
-                # Using gemini-1.5-pro-latest (broadest API key compatibility)
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key={gem_key}"
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key={api_key}"
                 
                 headers = {"Content-Type": "application/json"}
                 payload = {
@@ -135,7 +184,7 @@ class ZooAIModel:
 
                 return result
             else:
-                print("No API key found, using fallback data")
+                print("No authentication found, using fallback data")
                 return self._create_fallback_data(observation_text, date)
 
         except Exception as e:
