@@ -461,7 +461,7 @@ function LogCard({
 
               {/* Notes Preview - Always show if available */}
               {hasNotes && (
-                <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">
+                <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
                   {log.observationText || log.generalObservationText || log.injuriesText}
                 </p>
               )}
