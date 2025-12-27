@@ -83,7 +83,8 @@ class ZooAIModel:
             }
             params = {
                 "model": "nova-2",
-                "language": "en",  # Specify a single language
+                "language": "hi",  # Hindi language
+                "detect_language": "true",  # Auto-detect Hindi/English
             }
             response = requests.post(
                 self.deepgram_url, headers=headers, params=params, data=audio_bytes, timeout=60
