@@ -74,9 +74,11 @@ class ZooAIModel:
     def transcribe_audio(self, audio_bytes, content_type="audio/webm"):
         """Transcribe audio using Deepgram API."""
         if not self.deepgram_key:
+            print("❌ Deepgram API key missing")
             return "Audio transcription unavailable - Deepgram API key missing"
         
         try:
+            print(f"🎤 Transcribing audio: {len(audio_bytes)} bytes, type: {content_type}")
             headers = {
                 "Authorization": f"Token {self.deepgram_key}",
                 "Content-Type": content_type
@@ -89,13 +91,20 @@ class ZooAIModel:
             response = requests.post(
                 self.deepgram_url, headers=headers, params=params, data=audio_bytes, timeout=60
             )
+            
+            print(f"📡 Deepgram response status: {response.status_code}")
             response.raise_for_status()
+            
             result = response.json()
+            print(f"📄 Deepgram full response: {result}")
+            
             transcript = result.get("results", {}).get("channels", [{}])[0].get("alternatives", [{}])[0].get("transcript", "")
+            print(f"✅ Transcript: '{transcript}'")
+            
             return transcript or "No text returned by Deepgram"
 
         except Exception as e:
-            print("Error transcribing audio:", e)
+            print(f"❌ Error transcribing audio: {e}")
             return f"Error in audio transcription: {str(e)}"
 
     # ----------------------------
