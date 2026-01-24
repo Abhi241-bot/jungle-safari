@@ -366,7 +366,7 @@ export function DailyLogEntry() {
             value={generalObservationText}
             onChange={(e) => setGeneralObservationText(e.target.value)}
             className="h-32 text-base"
-            disabled={isLoading || mediaBlobUrl !== null} // Disable if audio is recorded
+            disabled={isLoading} // Only disable when loading, allow editing even with audio
           />
         </Card>
 
