@@ -102,11 +102,47 @@ class ZooAIModel:
     # AI Processing with Gemini (Service Account)
     # ----------------------------
     def process_observation(self, observation_text, date, animal_name="Unknown"):
-        """Convert text observation into structured data using Gemini AI."""
+        """Convert text observation into structured data using AI."""
         try:
             enhanced_observation = f"Date: {date}\nObservation: {observation_text}"
             
-            # Try service account first, then fall back to API key
+            # Try Groq first (fastest and highest rate limits)
+            groq_api_key = os.environ.get("GROQ_API_KEY")
+            if groq_api_key:
+                import requests
+                
+                url = "https://api.groq.com/openai/v1/chat/completions"
+                headers = {
+                    "Authorization": f"Bearer {groq_api_key}",
+                    "Content-Type": "application/json"
+                }
+                
+                prompt_text = self.prompt.format(observation=enhanced_observation, animal_name=animal_name)
+                
+                payload = {
+                    "model": "llama-3.3-70b-versatile",  # Fast and accurate model
+                    "messages": [
+                        {"role": "system", "content": "You are an expert zoo monitoring assistant. Return only valid JSON."},
+                        {"role": "user", "content": prompt_text}
+                    ],
+                    "temperature": 0.3,
+                    "max_tokens": 1000
+                }
+                
+                response = requests.post(url, json=payload, headers=headers, timeout=30)
+                response.raise_for_status()
+                
+                result_data = response.json()
+                json_text = result_data.get("choices", [{}])[0].get("message", {}).get("content", "")
+                
+                result = self.parser.parse(json_text)
+                
+                if hasattr(result, "date_or_day"):
+                    result.date_or_day = date
+
+                return result
+            
+            # Try service account (Gemini) as fallback
             service_account_json = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON")
             api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("OPENAI_API_KEY") or os.environ.get("HUGGINGFACE_API_KEY")
             
