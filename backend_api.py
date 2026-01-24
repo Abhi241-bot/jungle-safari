@@ -633,9 +633,20 @@ def process_audio_observation():
             print(f"⚠️ Could not fetch animal name for ID {animal_id}: {e}")
 
     try:
+        # First, transcribe the audio to get the raw text
+        transcribed_text = zoo_model.transcribe_audio(audio_bytes, content_type)
+        print(f"📝 Transcribed text: {transcribed_text}")
+        
+        # Set the prefix and process with AI
+        zoo_model.prefix = prefix
+        
         # Use the AI model to transcribe and process the audio
         structured_data: AnimalMonitoringData = zoo_model.process_audio_observation(audio_bytes, date, content_type, animal_name)
         data_dict = structured_data.model_dump()
+        
+        # Add the raw transcribed text to the response so frontend can display it
+        data_dict['transcribedText'] = transcribed_text
+        data_dict['fullObservationText'] = prefix + transcribed_text
 
         # Save to Firestore if the client is available
         if db:
