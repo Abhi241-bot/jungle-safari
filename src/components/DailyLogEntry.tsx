@@ -205,8 +205,9 @@ export function DailyLogEntry() {
       toast.success(t.observationProcessedSuccess);
       if (selectedUsersToShare.length > 0) console.log("TODO: Sharing with users:", selectedUsersToShare); // Placeholder for future sharing logic
 
-      // Clear form after successful submission
-      resetState();
+      // Don't clear form immediately - let user see the AI summary first
+      // User can manually clear or submit another observation
+      // resetState();
 
     } catch (err: any) {
       const errorMessage = err.response?.data?.error || err.message || t.processingError;
