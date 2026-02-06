@@ -201,7 +201,10 @@ export function DailyLogEntry() {
       const response = await axios.post(`${API_BASE_URL}/process_text_observation`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
+      console.log("🔍 API Response:", response.data);
+      console.log("🔍 Setting processedData to:", response.data);
       setProcessedData(response.data);
+      console.log("✅ processedData state should now be set");
       toast.success(t.observationProcessedSuccess);
       if (selectedUsersToShare.length > 0) console.log("TODO: Sharing with users:", selectedUsersToShare); // Placeholder for future sharing logic
 
