@@ -75,6 +75,8 @@ export const translations = {
     shareWith: 'Share With',
     selectUsersToShare: 'Select individual users to share this log with',
     notifyVetDepartment: 'Notify Vet Department of this log',
+    healthReports: 'Health Reports',
+    voiceLogs: 'Voice Logs',
   },
   hi: {
     zookeeper: 'चिड़ियाघर कीपर',
@@ -142,5 +144,7 @@ export const translations = {
     shareWith: 'साझा करें',
     selectUsersToShare: 'इस लॉग को साझा करने के लिए व्यक्तिगत उपयोगकर्ताओं का चयन करें',
     notifyVetDepartment: 'इस लॉग की पशु चिकित्सा विभाग को सूचित करें',
+    healthReports: 'स्वास्थ्य रिपोर्ट',
+    voiceLogs: 'वॉयस लॉग',
   },
 };
