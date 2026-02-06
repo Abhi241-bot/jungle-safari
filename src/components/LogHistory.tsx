@@ -42,6 +42,21 @@ interface LogEntry {
   videoUrl?: string;
   gateImageUrl?: string; // Gate lock image
   observationText?: string; // Audio/text observation
+
+  // AI-extracted fields
+  incharge_signature?: string;
+  daily_animal_health_monitoring?: string;
+  other_animal_requirements?: string;
+  carnivorous_animal_feeding_chart?: string;
+  medicine_stock_register?: string;
+  daily_wildlife_monitoring?: string;
+  animal_observed_on_time?: boolean;
+  clean_drinking_water_provided?: boolean;
+  enclosure_cleaned_properly?: boolean;
+  normal_behaviour_status?: boolean;
+  normal_behaviour_details?: string;
+  feed_and_supplements_available?: boolean;
+  feed_given_as_prescribed?: boolean;
 }
 
 export function LogHistory() {
@@ -86,15 +101,15 @@ export function LogHistory() {
   const animalLogs = filterAnimal === 'all'
     ? logs
     : logs.filter(log => {
-        const animal = animals.find(a => a.id === log.animalId);
-        return animal ? `${animal.name} (${animal.species})` === filterAnimal : false;
-      });
+      const animal = animals.find(a => a.id === log.animalId);
+      return animal ? `${animal.name} (${animal.species})` === filterAnimal : false;
+    });
 
   // Get logs for selected date
   const logsForDate = selectedDate
-    ? animalLogs.filter(log => 
-        new Date(log.createdAt).toDateString() === selectedDate.toDateString()
-      )
+    ? animalLogs.filter(log =>
+      new Date(log.createdAt).toDateString() === selectedDate.toDateString()
+    )
     : [];
 
   // Get dates that have logs
@@ -113,14 +128,14 @@ export function LogHistory() {
   }
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
       className="min-h-screen bg-gradient-to-b from-green-50 to-amber-50 dark:from-gray-900 dark:to-gray-800 pb-8"
     >
       {/* Header */}
-      <motion.div 
+      <motion.div
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.4, ease: "easeOut" }}
@@ -221,58 +236,58 @@ export function LogHistory() {
               transition={{ duration: 0.3 }}
             >
               <Card className="p-4 bg-white dark:bg-gray-800 overflow-hidden hover:shadow-xl transition-shadow duration-300">
-              <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={setSelectedDate}
-                className="rounded-md border-0"
-                modifiers={{
-                  hasLog: datesWithLogs,
-                }}
-                modifiersStyles={{
-                  hasLog: {
-                    fontWeight: 'bold',
-                    textDecoration: 'underline',
-                    color: '#16a34a',
-                  },
-                }}
-              />
-              <motion.div 
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="mt-4 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg"
-              >
-                <p className="text-sm text-green-800 dark:text-green-200 text-center">
-                  {language === 'en' 
-                    ? '• Underlined dates have logs' 
-                    : '• रेखांकित तिथियों में लॉग हैं'}
-                </p>
-              </motion.div>
-            </Card>
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={setSelectedDate}
+                  className="rounded-md border-0"
+                  modifiers={{
+                    hasLog: datesWithLogs,
+                  }}
+                  modifiersStyles={{
+                    hasLog: {
+                      fontWeight: 'bold',
+                      textDecoration: 'underline',
+                      color: '#16a34a',
+                    },
+                  }}
+                />
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="mt-4 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg"
+                >
+                  <p className="text-sm text-green-800 dark:text-green-200 text-center">
+                    {language === 'en'
+                      ? '• Underlined dates have logs'
+                      : '• रेखांकित तिथियों में लॉग हैं'}
+                  </p>
+                </motion.div>
+              </Card>
             </motion.div>
 
             {/* Logs for Selected Date */}
             {selectedDate && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
                 className="space-y-3"
               >
-                <motion.h3 
+                <motion.h3
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.1 }}
                   className="text-green-900 dark:text-green-100 px-2"
                 >
-                  {language === 'en' ? 'Logs for' : 'लॉग'} {selectedDate.toLocaleDateString('en-IN', { 
-                    day: 'numeric', 
-                    month: 'long', 
-                    year: 'numeric' 
+                  {language === 'en' ? 'Logs for' : 'लॉग'} {selectedDate.toLocaleDateString('en-IN', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
                   })}
                 </motion.h3>
-                
+
                 {logsForDate.length === 0 ? (
                   <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
@@ -287,7 +302,7 @@ export function LogHistory() {
                       >
                         <FileText className="w-12 h-12 text-gray-400 mx-auto mb-3" />
                       </motion.div>
-                      <motion.p 
+                      <motion.p
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.3 }}
@@ -316,7 +331,7 @@ export function LogHistory() {
                 {animalLogs.length} {language === 'en' ? 'entries' : 'प्रविष्टियाँ'}
               </Badge>
             </div>
-            
+
             {animalLogs.map((log, index) => (
               <LogCard key={log.id} log={log} animals={animals} index={index} language={language} showDate />
             ))}
@@ -327,15 +342,15 @@ export function LogHistory() {
   );
 }
 
-function LogCard({ 
-  log, 
-  index, 
+function LogCard({
+  log,
+  index,
   animals,
   language,
-  showDate = false 
-}: { 
-  log: LogEntry; 
-  index: number; 
+  showDate = false
+}: {
+  log: LogEntry;
+  index: number;
   animals: Animal[];
   language: 'en' | 'hi';
   showDate?: boolean;
@@ -372,7 +387,7 @@ function LogCard({
       <Card className="p-4 bg-white dark:bg-gray-800 hover:shadow-2xl transition-all duration-300 cursor-pointer border border-transparent hover:border-green-200 dark:hover:border-green-800">
         <div className="flex gap-4">
           {/* Animal Image */}
-          <motion.div 
+          <motion.div
             className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0"
             whileHover={{ scale: 1.1 }}
             transition={{ type: "spring", stiffness: 300 }}
@@ -402,7 +417,7 @@ function LogCard({
 
             {/* Health Metrics */}
             <div className="grid grid-cols-3 gap-2">
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.08 + 0.1 }}
@@ -411,7 +426,7 @@ function LogCard({
               >
                 {language === 'en' ? 'Mood' : 'मूड'}: {getMoodLabel(log.moodPercentage)}
               </motion.div>
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.08 + 0.15 }}
@@ -420,7 +435,7 @@ function LogCard({
               >
                 {language === 'en' ? 'Appetite' : 'भूख'}: {log.appetitePercentage}%
               </motion.div>
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, x: 10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.08 + 0.2 }}
@@ -458,6 +473,60 @@ function LogCard({
               <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">
                 {log.observationText || log.generalObservationText || log.injuriesText}
               </p>
+            )}
+
+            {/* AI Summary Fields */}
+            {(log.incharge_signature || log.daily_animal_health_monitoring || log.other_animal_requirements || log.medicine_stock_register) && (
+              <div className="mt-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg space-y-2 text-sm">
+                {log.incharge_signature && (
+                  <div className="flex items-start gap-2">
+                    <span className="font-semibold text-green-800 dark:text-green-200 min-w-[100px]">
+                      {language === 'en' ? 'Signature:' : 'हस्ताक्षर:'}
+                    </span>
+                    <span className="text-gray-700 dark:text-gray-300">{log.incharge_signature}</span>
+                  </div>
+                )}
+                {log.daily_animal_health_monitoring && (
+                  <div className="flex items-start gap-2">
+                    <span className="font-semibold text-green-800 dark:text-green-200 min-w-[100px]">
+                      {language === 'en' ? 'Health:' : 'स्वास्थ्य:'}
+                    </span>
+                    <span className="text-gray-700 dark:text-gray-300 line-clamp-2">{log.daily_animal_health_monitoring}</span>
+                  </div>
+                )}
+                {log.other_animal_requirements && (
+                  <div className="flex items-start gap-2">
+                    <span className="font-semibold text-green-800 dark:text-green-200 min-w-[100px]">
+                      {language === 'en' ? 'Requirements:' : 'आवश्यकताएं:'}
+                    </span>
+                    <span className="text-gray-700 dark:text-gray-300 line-clamp-2">{log.other_animal_requirements}</span>
+                  </div>
+                )}
+                {log.medicine_stock_register && (
+                  <div className="flex items-start gap-2">
+                    <span className="font-semibold text-green-800 dark:text-green-200 min-w-[100px]">
+                      {language === 'en' ? 'Medicine:' : 'दवा:'}
+                    </span>
+                    <span className="text-gray-700 dark:text-gray-300 line-clamp-2">{log.medicine_stock_register}</span>
+                  </div>
+                )}
+                {log.carnivorous_animal_feeding_chart && (
+                  <div className="flex items-start gap-2">
+                    <span className="font-semibold text-green-800 dark:text-green-200 min-w-[100px]">
+                      {language === 'en' ? 'Feeding:' : 'भोजन:'}
+                    </span>
+                    <span className="text-gray-700 dark:text-gray-300 line-clamp-2">{log.carnivorous_animal_feeding_chart}</span>
+                  </div>
+                )}
+                {log.daily_wildlife_monitoring && (
+                  <div className="flex items-start gap-2">
+                    <span className="font-semibold text-green-800 dark:text-green-200 min-w-[100px]">
+                      {language === 'en' ? 'Monitoring:' : 'निगरानी:'}
+                    </span>
+                    <span className="text-gray-700 dark:text-gray-300 line-clamp-2">{log.daily_wildlife_monitoring}</span>
+                  </div>
+                )}
+              </div>
             )}
 
             {/* Image Preview */}
