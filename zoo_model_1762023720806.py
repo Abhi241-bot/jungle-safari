@@ -52,19 +52,40 @@ class ZooAIModel:
                 for a specific animal and convert it into a structured JSON format.
 
                 **Animal Being Observed:** {animal_name}
+                **Date of Observation:** {date}
 
-                **Instructions:**
-                1.  Read the observation text carefully.
-                2.  Determine the boolean values (true/false) for each required field based on the text. For example, if the text says "animal was seen", set `animal_observed_on_time` to `true`.
-                3.  Extract a concise summary for `daily_animal_health_monitoring`.
-                4.  Fill in all other fields based on the observation. If a field is not mentioned, you can make a reasonable assumption (e.g., `incharge_signature` can be 'Zookeeper').
-                5.  Return ONLY a valid JSON object that strictly follows the provided schema. Do not include any extra text, comments, or markdown.
+                **CRITICAL INSTRUCTIONS:**
+                1.  Read the observation text VERY CAREFULLY. It may be in Hindi, English, or mixed.
+                2.  EXTRACT SPECIFIC DETAILS from the text - do NOT make generic assumptions.
+                3.  For each field, look for CONCRETE EVIDENCE in the text:
+                    - If text mentions "सुबह 7 बजे" or "7 AM", note the specific time
+                    - If text mentions names like "राकेश" or "Rakesh", use the ACTUAL name
+                    - If text mentions specific foods like "गन्ना, केला" or "sugarcane, banana", list them
+                    - If text mentions medicine/vitamins, include those details
+                    - If text mentions specific requirements like "छाया के लिए पेड़" or "trees for shade", extract that
+                
+                4.  Field-specific extraction rules:
+                    - `incharge_signature`: Extract the ACTUAL name from text (e.g., "राकेश कुमार" or "Rakesh Kumar"). If not found, use "Zookeeper"
+                    - `daily_animal_health_monitoring`: Summarize health status, behavior, any issues mentioned
+                    - `other_animal_requirements`: Extract SPECIFIC needs mentioned (e.g., "Need trees for shade, need mud pit for bathing")
+                    - `carnivorous_animal_feeding_chart`: If animal is carnivore, extract meat feeding details. If herbivore, state "Not applicable - herbivore"
+                    - `medicine_stock_register`: Extract medicine/vitamin details if mentioned, otherwise "No medicine administered"
+                    - `daily_wildlife_monitoring`: Summarize overall observation with specific details (weight, behavior, time observed)
+                
+                5.  Boolean fields (true/false):
+                    - Look for keywords: "समय पर देखा" = observed on time (true)
+                    - "साफ पानी" = clean water (true)
+                    - "सफाई की गई" = cleaned (true)
+                    - "सामान्य व्यवहार" = normal behavior (true)
+                    - If NOT mentioned, assume true unless there's evidence of a problem
+                
+                6.  Return ONLY a valid JSON object. No extra text, comments, or markdown.
 
                 {format_instructions}
 
-                Observation: {observation}
+                Observation Text: {observation}
             """,
-            input_variables=["observation", "animal_name"],
+            input_variables=["observation", "animal_name", "date"],
             partial_variables={"format_instructions": self.parser.get_format_instructions()},
         )
 
@@ -126,7 +147,7 @@ class ZooAIModel:
                     "Content-Type": "application/json"
                 }
                 
-                prompt_text = self.prompt.format(observation=enhanced_observation, animal_name=animal_name)
+                prompt_text = self.prompt.format(observation=enhanced_observation, animal_name=animal_name, date=date)
                 
                 payload = {
                     "model": "llama-3.3-70b-versatile",  # Fast and accurate model
@@ -184,7 +205,7 @@ class ZooAIModel:
                 payload = {
                     "contents": [{
                         "parts": [{
-                            "text": self.prompt.format(observation=enhanced_observation, animal_name=animal_name)
+                            "text": self.prompt.format(observation=enhanced_observation, animal_name=animal_name, date=date)
                         }]
                     }]
                 }
@@ -212,7 +233,7 @@ class ZooAIModel:
                 payload = {
                     "contents": [{
                         "parts": [{
-                            "text": self.prompt.format(observation=enhanced_observation, animal_name=animal_name)
+                            "text": self.prompt.format(observation=enhanced_observation, animal_name=animal_name, date=date)
                         }]
                     }]
                 }
