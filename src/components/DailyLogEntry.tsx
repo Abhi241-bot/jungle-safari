@@ -158,16 +158,14 @@ export function DailyLogEntry() {
     setIsLoading(true);
 
     try {
-      // Construct a comprehensive observation text for the AI
-      let fullObservationText = `Overall Health Status: ${healthStatus}. `;
-      fullObservationText += `Mood: ${moodPercentage}% (${moodPercentage < 50 ? t.agitated : t.calm}). `;
-      fullObservationText += `Appetite: ${appetitePercentage}% (${appetitePercentage < 50 ? t.low : t.high}). `;
-      fullObservationText += `Movement: ${movementPercentage}% (${movementPercentage < 50 ? t.slow : t.active}). `;
+      // Send ONLY the user's actual observation text to the AI
+      // The AI will extract structured data from the text itself
+      let userObservationText = '';
       if (injuriesText.trim()) {
-        fullObservationText += `Injuries Report: ${injuriesText}. `;
+        userObservationText += `${injuriesText.trim()}. `;
       }
       if (generalObservationText.trim()) {
-        fullObservationText += `General Observation: ${generalObservationText}. `;
+        userObservationText += generalObservationText.trim();
       }
 
       const formData = new FormData();
@@ -192,7 +190,7 @@ export function DailyLogEntry() {
         movementPercentage: movementPercentage,
         injuriesText: injuriesText.trim(),
         generalObservationText: generalObservationText.trim(),
-        observationText: fullObservationText, // Combined text for AI processing
+        observationText: userObservationText, // ONLY user's actual observation text for AI
         sharedWith: selectedUsersToShare,
       };
 
