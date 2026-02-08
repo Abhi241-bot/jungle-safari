@@ -40,7 +40,6 @@ interface InventoryItem {
   quantity: number;
   unit: string;
   minThreshold: number;
-  cost: number;
   lastRestocked: string;
   expiryDate?: string;
   supplier?: string;
@@ -83,10 +82,31 @@ export function InventoryManagement() {
     quantity: '',
     unit: '',
     minThreshold: '',
-    cost: '',
     supplier: '',
     expiryDate: '',
   });
+
+  // Helper function to calculate expiry status
+  const getExpiryStatus = (expiryDate?: string): 'good' | 'expiring' | 'expired' => {
+    if (!expiryDate) return 'good';
+
+    const today = new Date();
+    const expiry = new Date(expiryDate);
+    const daysUntilExpiry = Math.floor((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+
+    if (daysUntilExpiry < 0) return 'expired'; // Red
+    if (daysUntilExpiry <= 7) return 'expiring'; // Yellow
+    return 'good'; // Green
+  };
+
+  // Helper function to get color class based on expiry status
+  const getExpiryColorClass = (status: 'good' | 'expiring' | 'expired'): string => {
+    switch (status) {
+      case 'expired': return 'bg-red-100 border-red-400';
+      case 'expiring': return 'bg-yellow-100 border-yellow-400';
+      case 'good': return 'bg-green-100 border-green-400';
+    }
+  };
 
   const lowStockItems = inventory.filter(item => item.quantity < item.minThreshold);
 
@@ -99,10 +119,8 @@ export function InventoryManagement() {
     return matchesSearch && item.category === activeTab;
   });
 
-  const totalValue = inventory.reduce((sum, item) => sum + (item.quantity * item.cost / 100), 0);
-
   const handleAddOrUpdate = async () => {
-    if (!formData.name || !formData.quantity || !formData.unit || !formData.minThreshold || !formData.cost) {
+    if (!formData.name || !formData.quantity || !formData.unit || !formData.minThreshold) {
       toast.error(language === 'en' ? 'Please fill all required fields' : 'कृपया सभी आवश्यक फ़ील्ड भरें');
       return;
     }
@@ -113,7 +131,6 @@ export function InventoryManagement() {
       quantity: parseInt(formData.quantity),
       unit: formData.unit,
       minThreshold: parseInt(formData.minThreshold),
-      cost: parseInt(formData.cost),
       supplier: formData.supplier,
       expiryDate: formData.expiryDate || undefined,
     };
@@ -149,7 +166,6 @@ export function InventoryManagement() {
       quantity: item.quantity.toString(),
       unit: item.unit,
       minThreshold: item.minThreshold.toString(),
-      cost: item.cost.toString(),
       supplier: item.supplier || '',
       expiryDate: item.expiryDate || '',
     });
@@ -173,7 +189,6 @@ export function InventoryManagement() {
       quantity: '',
       unit: '',
       minThreshold: '',
-      cost: '',
       supplier: '',
       expiryDate: '',
     });
@@ -204,16 +219,17 @@ export function InventoryManagement() {
   const handleExportPDF = async () => {
     let report = 'INVENTORY REPORT\n\n';
     report += `Total Items: ${inventory.length}\n`;
-    report += `Low Stock Items: ${lowStockItems.length}\n`;
-    report += `Total Value: ₹${totalValue.toLocaleString()}\n\n`;
+    report += `Low Stock Items: ${lowStockItems.length}\n\n`;
     report += '='.repeat(60) + '\n\n';
 
     inventory.forEach(item => {
       report += `${item.name}\n`;
       report += `  Category: ${item.category}\n`;
       report += `  Quantity: ${item.quantity} ${item.unit}\n`;
-      report += `  Cost: ₹${item.cost} per ${item.unit}\n`;
       report += `  Supplier: ${item.supplier || 'N/A'}\n`;
+      if (item.expiryDate) {
+        report += `  Expiry: ${new Date(item.expiryDate).toLocaleDateString()}\n`;
+      }
       report += `  Status: ${item.quantity < item.minThreshold ? 'LOW STOCK' : 'OK'}\n\n`;
     });
 
@@ -402,16 +418,6 @@ export function InventoryManagement() {
               </div>
 
               <div>
-                <Label>{language === 'en' ? 'Cost per Unit (₹)' : 'प्रति इकाई लागत (₹)'} *</Label>
-                <Input
-                  type="number"
-                  placeholder="450"
-                  value={formData.cost}
-                  onChange={(e) => setFormData({ ...formData, cost: e.target.value })}
-                />
-              </div>
-
-              <div>
                 <Label>{language === 'en' ? 'Supplier' : 'आपूर्तिकर्ता'}</Label>
                 <Input
                   placeholder={language === 'en' ? 'Supplier name' : 'आपूर्तिकर्ता का नाम'}
@@ -472,7 +478,10 @@ export function InventoryManagement() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
                 >
-                  <Card className={`p-4 ${item.quantity < item.minThreshold ? 'border-2 border-red-400 bg-red-50' : 'bg-white'}`}>
+                  <Card className={`p-4 ${item.quantity < item.minThreshold
+                      ? 'border-2 border-red-400 bg-red-50'
+                      : getExpiryColorClass(getExpiryStatus(item.expiryDate))
+                    }`}>
                     <div className="flex gap-3">
                       <div className={`w-12 h-12 rounded-full flex items-center justify-center ${item.category === 'food' ? 'bg-green-100' : 'bg-blue-100'
                         }`}>
@@ -507,13 +516,7 @@ export function InventoryManagement() {
                           </div>
                         )}
 
-                        <div className="grid grid-cols-2 gap-2 text-sm mb-3">
-                          <div>
-                            <span className="text-gray-500 text-xs">
-                              {language === 'en' ? 'Cost/Unit' : 'लागत/इकाई'}:
-                            </span>
-                            <div className="text-gray-900">₹{item.cost}</div>
-                          </div>
+                        <div className="grid grid-cols-1 gap-2 text-sm mb-3">
                           {item.expiryDate && (
                             <div>
                               <span className="text-gray-500 text-xs">
