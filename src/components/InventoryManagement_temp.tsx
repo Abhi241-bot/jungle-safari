@@ -1,37 +1,21 @@
-import React, { useContext, useState, useEffect } from 'react';
+﻿import React, { useContext, useState, useEffect } from 'react';
 import { API_BASE_URL } from '../config';
 import axios from 'axios';
-import { API_BASE_URL } from '../config';
 import { AppContext } from '../App';
-import { API_BASE_URL } from '../config';
 import { translations } from './mockData';
-import { API_BASE_URL } from '../config';
 import { ArrowLeft, Plus, AlertTriangle, Package, Pill, Apple, Search, TrendingDown, Edit, Trash2, Download, FileText } from 'lucide-react';
-import { API_BASE_URL } from '../config';
 import { motion } from 'motion/react';
-import { API_BASE_URL } from '../config';
 import { Button } from './ui/button';
-import { API_BASE_URL } from '../config';
 import { Card } from './ui/card';
-import { API_BASE_URL } from '../config';
 import { Badge } from './ui/badge';
-import { API_BASE_URL } from '../config';
 import { Input } from './ui/input';
-import { API_BASE_URL } from '../config';
 import { Label } from './ui/label';
-import { API_BASE_URL } from '../config';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { API_BASE_URL } from '../config';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from './ui/dialog';
-import { API_BASE_URL } from '../config';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { API_BASE_URL } from '../config';
 import { toast } from 'sonner';
-import { API_BASE_URL } from '../config';
 import { exportToCSV, exportToPDF, prepareInventoryDataForExport } from '../utils/exportUtils';
-import { API_BASE_URL } from '../config';
 import { Loader } from 'lucide-react';
-import { API_BASE_URL } from '../config';
 
 interface InventoryItem {
   id: string;
@@ -45,6 +29,41 @@ interface InventoryItem {
   expiryDate?: string;
   supplier?: string;
 }
+
+// Helper function to get expiry status
+const getExpiryStatus = (expiryDate: string | undefined, language: 'en' | 'hi') => {
+  if (!expiryDate) return null;
+
+  const today = new Date();
+  const expiry = new Date(expiryDate);
+  const daysUntilExpiry = Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+
+  let bgColor = 'bg-green-100';
+  let textColor = 'text-green-700';
+  let borderColor = 'border-green-300';
+  let statusText = language === 'en' ? 'Good' : 'à¤…à¤šà¥à¤›à¤¾';
+
+  if (daysUntilExpiry < 0) {
+    bgColor = 'bg-red-100';
+    textColor = 'text-red-700';
+    borderColor = 'border-red-300';
+    statusText = language === 'en' ? 'Expired' : 'à¤¸à¤®à¤¾à¤ªà¥à¤¤';
+  } else if (daysUntilExpiry <= 30) {
+    bgColor = 'bg-yellow-100';
+    textColor = 'text-yellow-700';
+    borderColor = 'border-yellow-300';
+    statusText = language === 'en' ? 'Expiring Soon' : 'à¤œà¤²à¥à¤¦ à¤¸à¤®à¤¾à¤ªà¥à¤¤';
+  }
+
+  return {
+    bgColor,
+    textColor,
+    borderColor,
+    statusText,
+    daysUntilExpiry,
+    expiryDate: expiry.toLocaleDateString(),
+  };
+};
 
 export function InventoryManagement() {
   const { language, setCurrentScreen, currentUser } = useContext(AppContext);
@@ -103,7 +122,7 @@ export function InventoryManagement() {
 
   const handleAddOrUpdate = async () => {
     if (!formData.name || !formData.quantity || !formData.unit || !formData.minThreshold || !formData.cost) {
-      toast.error(language === 'en' ? 'Please fill all required fields' : 'कृपया सभी आवश्यक फ़ील्ड भरें');
+      toast.error(language === 'en' ? 'Please fill all required fields' : 'à¤•à¥ƒà¤ªà¤¯à¤¾ à¤¸à¤­à¥€ à¤†à¤µà¤¶à¥à¤¯à¤• à¤«à¤¼à¥€à¤²à¥à¤¡ à¤­à¤°à¥‡à¤‚');
       return;
     }
 
@@ -124,17 +143,17 @@ export function InventoryManagement() {
         setInventory(inventory.map(item =>
           item.id === editingItem.id ? { ...item, ...payload, lastRestocked: 'Just now' } : item
         ));
-        toast.success(language === 'en' ? 'Item updated successfully!' : 'आइटम सफलतापूर्वक अपडेट किया गया!');
+        toast.success(language === 'en' ? 'Item updated successfully!' : 'à¤†à¤‡à¤Ÿà¤® à¤¸à¤«à¤²à¤¤à¤¾à¤ªà¥‚à¤°à¥à¤µà¤• à¤…à¤ªà¤¡à¥‡à¤Ÿ à¤•à¤¿à¤¯à¤¾ à¤—à¤¯à¤¾!');
       } catch (err) {
-        toast.error(language === 'en' ? 'Failed to update item' : 'आइटम अपडेट करने में विफल');
+        toast.error(language === 'en' ? 'Failed to update item' : 'à¤†à¤‡à¤Ÿà¤® à¤…à¤ªà¤¡à¥‡à¤Ÿ à¤•à¤°à¤¨à¥‡ à¤®à¥‡à¤‚ à¤µà¤¿à¤«à¤²');
       }
     } else {
       try {
         const response = await axios.post(`${API_BASE_URL}/inventory`, payload);
         setInventory([response.data, ...inventory]);
-        toast.success(language === 'en' ? 'Item added successfully!' : 'आइटम सफलतापूर्वक जोड़ा गया!');
+        toast.success(language === 'en' ? 'Item added successfully!' : 'à¤†à¤‡à¤Ÿà¤® à¤¸à¤«à¤²à¤¤à¤¾à¤ªà¥‚à¤°à¥à¤µà¤• à¤œà¥‹à¤¡à¤¼à¤¾ à¤—à¤¯à¤¾!');
       } catch (err) {
-        toast.error(language === 'en' ? 'Failed to add item' : 'आइटम जोड़ने में विफल');
+        toast.error(language === 'en' ? 'Failed to add item' : 'à¤†à¤‡à¤Ÿà¤® à¤œà¥‹à¤¡à¤¼à¤¨à¥‡ à¤®à¥‡à¤‚ à¤µà¤¿à¤«à¤²');
       }
     }
 
@@ -160,9 +179,9 @@ export function InventoryManagement() {
     try {
       await axios.delete(`${API_BASE_URL}/inventory/${id}`);
       setInventory(inventory.filter(item => item.id !== id));
-      toast.success(language === 'en' ? 'Item deleted successfully!' : 'आइटम सफलतापूर्वक हटाया गया!');
+      toast.success(language === 'en' ? 'Item deleted successfully!' : 'à¤†à¤‡à¤Ÿà¤® à¤¸à¤«à¤²à¤¤à¤¾à¤ªà¥‚à¤°à¥à¤µà¤• à¤¹à¤Ÿà¤¾à¤¯à¤¾ à¤—à¤¯à¤¾!');
     } catch (err) {
-      toast.error(language === 'en' ? 'Failed to delete item' : 'आइटम हटाने में विफल');
+      toast.error(language === 'en' ? 'Failed to delete item' : 'à¤†à¤‡à¤Ÿà¤® à¤¹à¤Ÿà¤¾à¤¨à¥‡ à¤®à¥‡à¤‚ à¤µà¤¿à¤«à¤²');
     }
   };
 
@@ -189,36 +208,36 @@ export function InventoryManagement() {
         lastRestocked: updatedItem.lastRestocked
       });
       setInventory(inventory.map(i => i.id === item.id ? updatedItem : i));
-      toast.success(language === 'en' ? `${item.name} restocked!` : `${item.name} पुनः स्टॉक किया गया!`);
+      toast.success(language === 'en' ? `${item.name} restocked!` : `${item.name} à¤ªà¥à¤¨à¤ƒ à¤¸à¥à¤Ÿà¥‰à¤• à¤•à¤¿à¤¯à¤¾ à¤—à¤¯à¤¾!`);
     } catch (err) {
-      toast.error(language === 'en' ? 'Failed to restock item' : 'आइटम को पुनः स्टॉक करने में विफल');
+      toast.error(language === 'en' ? 'Failed to restock item' : 'à¤†à¤‡à¤Ÿà¤® à¤•à¥‹ à¤ªà¥à¤¨à¤ƒ à¤¸à¥à¤Ÿà¥‰à¤• à¤•à¤°à¤¨à¥‡ à¤®à¥‡à¤‚ à¤µà¤¿à¤«à¤²');
     }
   };
 
   const handleExportCSV = () => {
     const data = prepareInventoryDataForExport(inventory);
     exportToCSV(data, `inventory-${new Date().toISOString().split('T')[0]}`);
-    toast.success(language === 'en' ? 'Inventory exported to CSV!' : 'इन्वेंटरी CSV में निर्यात की गई!');
+    toast.success(language === 'en' ? 'Inventory exported to CSV!' : 'à¤‡à¤¨à¥à¤µà¥‡à¤‚à¤Ÿà¤°à¥€ CSV à¤®à¥‡à¤‚ à¤¨à¤¿à¤°à¥à¤¯à¤¾à¤¤ à¤•à¥€ à¤—à¤ˆ!');
   };
 
   const handleExportPDF = async () => {
     let report = 'INVENTORY REPORT\n\n';
     report += `Total Items: ${inventory.length}\n`;
     report += `Low Stock Items: ${lowStockItems.length}\n`;
-    report += `Total Value: ₹${totalValue.toLocaleString()}\n\n`;
+    report += `Total Value: â‚¹${totalValue.toLocaleString()}\n\n`;
     report += '='.repeat(60) + '\n\n';
 
     inventory.forEach(item => {
       report += `${item.name}\n`;
       report += `  Category: ${item.category}\n`;
       report += `  Quantity: ${item.quantity} ${item.unit}\n`;
-      report += `  Cost: ₹${item.cost} per ${item.unit}\n`;
+      report += `  Cost: â‚¹${item.cost} per ${item.unit}\n`;
       report += `  Supplier: ${item.supplier || 'N/A'}\n`;
       report += `  Status: ${item.quantity < item.minThreshold ? 'LOW STOCK' : 'OK'}\n\n`;
     });
 
     await exportToPDF(report, `inventory-${new Date().toISOString().split('T')[0]}`);
-    toast.success(language === 'en' ? 'Inventory exported to PDF!' : 'इन्वेंटरी PDF में निर्यात की गई!');
+    toast.success(language === 'en' ? 'Inventory exported to PDF!' : 'à¤‡à¤¨à¥à¤µà¥‡à¤‚à¤Ÿà¤°à¥€ PDF à¤®à¥‡à¤‚ à¤¨à¤¿à¤°à¥à¤¯à¤¾à¤¤ à¤•à¥€ à¤—à¤ˆ!');
   };
 
   if (isLoading) {
@@ -254,8 +273,8 @@ export function InventoryManagement() {
             </Button>
             <div>
               <div className="text-sm opacity-90">
-                {currentUser?.role === 'admin' ? (language === 'en' ? 'Admin' : 'प्रशासक') :
-                  currentUser?.role === 'officer' ? (language === 'en' ? 'Forest Officer' : 'वन अधिकारी') : ''}
+                {currentUser?.role === 'admin' ? (language === 'en' ? 'Admin' : 'à¤ªà¥à¤°à¤¶à¤¾à¤¸à¤•') :
+                  currentUser?.role === 'officer' ? (language === 'en' ? 'Forest Officer' : 'à¤µà¤¨ à¤…à¤§à¤¿à¤•à¤¾à¤°à¥€') : ''}
               </div>
               <div>{currentUser?.name}</div>
             </div>
@@ -263,14 +282,14 @@ export function InventoryManagement() {
         </div>
 
         <h1 className="text-white mb-4">
-          {language === 'en' ? 'Inventory Management' : 'इन्वेंटरी प्रबंधन'}
+          {language === 'en' ? 'Inventory Management' : 'à¤‡à¤¨à¥à¤µà¥‡à¤‚à¤Ÿà¤°à¥€ à¤ªà¥à¤°à¤¬à¤‚à¤§à¤¨'}
         </h1>
 
         {/* Search */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
           <Input
-            placeholder={language === 'en' ? 'Search items...' : 'आइटम खोजें...'}
+            placeholder={language === 'en' ? 'Search items...' : 'à¤†à¤‡à¤Ÿà¤® à¤–à¥‹à¤œà¥‡à¤‚...'}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10 bg-white/95 border-0 h-12 rounded-xl"
@@ -287,7 +306,7 @@ export function InventoryManagement() {
             </div>
             <div className="text-2xl">{inventory.length}</div>
             <div className="text-sm opacity-90">
-              {language === 'en' ? 'Total Items' : 'कुल आइटम'}
+              {language === 'en' ? 'Total Items' : 'à¤•à¥à¤² à¤†à¤‡à¤Ÿà¤®'}
             </div>
           </Card>
 
@@ -297,7 +316,7 @@ export function InventoryManagement() {
             </div>
             <div className="text-2xl">{lowStockItems.length}</div>
             <div className="text-sm opacity-90">
-              {language === 'en' ? 'Low Stock' : 'कम स्टॉक'}
+              {language === 'en' ? 'Low Stock' : 'à¤•à¤® à¤¸à¥à¤Ÿà¥‰à¤•'}
             </div>
           </Card>
         </div>
@@ -310,7 +329,7 @@ export function InventoryManagement() {
             className="h-12 border-2 border-green-600 text-green-600 hover:bg-green-50"
           >
             <Download className="w-4 h-4 mr-2" />
-            {language === 'en' ? 'Export CSV' : 'CSV निर्यात करें'}
+            {language === 'en' ? 'Export CSV' : 'CSV à¤¨à¤¿à¤°à¥à¤¯à¤¾à¤¤ à¤•à¤°à¥‡à¤‚'}
           </Button>
           <Button
             variant="outline"
@@ -318,7 +337,7 @@ export function InventoryManagement() {
             className="h-12 border-2 border-red-600 text-red-600 hover:bg-red-50"
           >
             <FileText className="w-4 h-4 mr-2" />
-            {language === 'en' ? 'Export PDF' : 'PDF निर्यात करें'}
+            {language === 'en' ? 'Export PDF' : 'PDF à¤¨à¤¿à¤°à¥à¤¯à¤¾à¤¤ à¤•à¤°à¥‡à¤‚'}
           </Button>
         </div>
 
@@ -330,42 +349,42 @@ export function InventoryManagement() {
           <DialogTrigger asChild>
             <Button className="w-full h-14 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 shadow-lg">
               <Plus className="w-5 h-5 mr-2" />
-              {language === 'en' ? 'Add Inventory Item' : 'इन्वेंटरी आइटम जोड़ें'}
+              {language === 'en' ? 'Add Inventory Item' : 'à¤‡à¤¨à¥à¤µà¥‡à¤‚à¤Ÿà¤°à¥€ à¤†à¤‡à¤Ÿà¤® à¤œà¥‹à¤¡à¤¼à¥‡à¤‚'}
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
                 {editingItem
-                  ? (language === 'en' ? 'Update Item' : 'आइटम अपडेट करें')
-                  : (language === 'en' ? 'Add New Item' : 'नया आइटम जोड़ें')}
+                  ? (language === 'en' ? 'Update Item' : 'à¤†à¤‡à¤Ÿà¤® à¤…à¤ªà¤¡à¥‡à¤Ÿ à¤•à¤°à¥‡à¤‚')
+                  : (language === 'en' ? 'Add New Item' : 'à¤¨à¤¯à¤¾ à¤†à¤‡à¤Ÿà¤® à¤œà¥‹à¤¡à¤¼à¥‡à¤‚')}
               </DialogTitle>
               <DialogDescription>
-                {language === 'en' ? 'Enter item details including quantity, cost, and supplier information.' : 'मात्रा, लागत और आपूर्तिकर्ता की जानकारी सहित आइटम विवरण दर्ज करें।'}
+                {language === 'en' ? 'Enter item details including quantity, cost, and supplier information.' : 'à¤®à¤¾à¤¤à¥à¤°à¤¾, à¤²à¤¾à¤—à¤¤ à¤”à¤° à¤†à¤ªà¥‚à¤°à¥à¤¤à¤¿à¤•à¤°à¥à¤¤à¤¾ à¤•à¥€ à¤œà¤¾à¤¨à¤•à¤¾à¤°à¥€ à¤¸à¤¹à¤¿à¤¤ à¤†à¤‡à¤Ÿà¤® à¤µà¤¿à¤µà¤°à¤£ à¤¦à¤°à¥à¤œ à¤•à¤°à¥‡à¤‚à¥¤'}
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div>
-                <Label>{language === 'en' ? 'Item Name' : 'आइटम का नाम'} *</Label>
+                <Label>{language === 'en' ? 'Item Name' : 'à¤†à¤‡à¤Ÿà¤® à¤•à¤¾ à¤¨à¤¾à¤®'} *</Label>
                 <Input
-                  placeholder={language === 'en' ? 'e.g., Raw Meat' : 'जैसे, कच्चा मांस'}
+                  placeholder={language === 'en' ? 'e.g., Raw Meat' : 'à¤œà¥ˆà¤¸à¥‡, à¤•à¤šà¥à¤šà¤¾ à¤®à¤¾à¤‚à¤¸'}
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 />
               </div>
 
               <div>
-                <Label>{language === 'en' ? 'Category' : 'श्रेणी'} *</Label>
+                <Label>{language === 'en' ? 'Category' : 'à¤¶à¥à¤°à¥‡à¤£à¥€'} *</Label>
                 <Select value={formData.category} onValueChange={(value: 'food' | 'medicine') => setFormData({ ...formData, category: value })}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="food">
-                      {language === 'en' ? 'Food' : 'भोजन'}
+                      {language === 'en' ? 'Food' : 'à¤­à¥‹à¤œà¤¨'}
                     </SelectItem>
                     <SelectItem value="medicine">
-                      {language === 'en' ? 'Medicine' : 'दवा'}
+                      {language === 'en' ? 'Medicine' : 'à¤¦à¤µà¤¾'}
                     </SelectItem>
                   </SelectContent>
                 </Select>
@@ -373,7 +392,7 @@ export function InventoryManagement() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label>{language === 'en' ? 'Quantity' : 'मात्रा'} *</Label>
+                  <Label>{language === 'en' ? 'Quantity' : 'à¤®à¤¾à¤¤à¥à¤°à¤¾'} *</Label>
                   <Input
                     type="number"
                     placeholder="100"
@@ -382,9 +401,9 @@ export function InventoryManagement() {
                   />
                 </div>
                 <div>
-                  <Label>{language === 'en' ? 'Unit' : 'इकाई'} *</Label>
+                  <Label>{language === 'en' ? 'Unit' : 'à¤‡à¤•à¤¾à¤ˆ'} *</Label>
                   <Input
-                    placeholder={language === 'en' ? 'kg, bottles, etc.' : 'किलो, बोतल, आदि'}
+                    placeholder={language === 'en' ? 'kg, bottles, etc.' : 'à¤•à¤¿à¤²à¥‹, à¤¬à¥‹à¤¤à¤², à¤†à¤¦à¤¿'}
                     value={formData.unit}
                     onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
                   />
@@ -392,7 +411,7 @@ export function InventoryManagement() {
               </div>
 
               <div>
-                <Label>{language === 'en' ? 'Minimum Threshold' : 'न्यूनतम सीमा'} *</Label>
+                <Label>{language === 'en' ? 'Minimum Threshold' : 'à¤¨à¥à¤¯à¥‚à¤¨à¤¤à¤® à¤¸à¥€à¤®à¤¾'} *</Label>
                 <Input
                   type="number"
                   placeholder="50"
@@ -402,7 +421,7 @@ export function InventoryManagement() {
               </div>
 
               <div>
-                <Label>{language === 'en' ? 'Cost per Unit (₹)' : 'प्रति इकाई लागत (₹)'} *</Label>
+                <Label>{language === 'en' ? 'Cost per Unit (â‚¹)' : 'à¤ªà¥à¤°à¤¤à¤¿ à¤‡à¤•à¤¾à¤ˆ à¤²à¤¾à¤—à¤¤ (â‚¹)'} *</Label>
                 <Input
                   type="number"
                   placeholder="450"
@@ -412,9 +431,9 @@ export function InventoryManagement() {
               </div>
 
               <div>
-                <Label>{language === 'en' ? 'Supplier' : 'आपूर्तिकर्ता'}</Label>
+                <Label>{language === 'en' ? 'Supplier' : 'à¤†à¤ªà¥‚à¤°à¥à¤¤à¤¿à¤•à¤°à¥à¤¤à¤¾'}</Label>
                 <Input
-                  placeholder={language === 'en' ? 'Supplier name' : 'आपूर्तिकर्ता का नाम'}
+                  placeholder={language === 'en' ? 'Supplier name' : 'à¤†à¤ªà¥‚à¤°à¥à¤¤à¤¿à¤•à¤°à¥à¤¤à¤¾ à¤•à¤¾ à¤¨à¤¾à¤®'}
                   value={formData.supplier}
                   onChange={(e) => setFormData({ ...formData, supplier: e.target.value })}
                 />
@@ -422,7 +441,7 @@ export function InventoryManagement() {
 
               {formData.category === 'medicine' && (
                 <div>
-                  <Label>{language === 'en' ? 'Expiry Date' : 'समाप्ति तिथि'}</Label>
+                  <Label>{language === 'en' ? 'Expiry Date' : 'à¤¸à¤®à¤¾à¤ªà¥à¤¤à¤¿ à¤¤à¤¿à¤¥à¤¿'}</Label>
                   <Input
                     type="date"
                     value={formData.expiryDate}
@@ -436,8 +455,8 @@ export function InventoryManagement() {
                 onClick={handleAddOrUpdate}
               >
                 {editingItem
-                  ? (language === 'en' ? 'Update Item' : 'आइटम अपडेट करें')
-                  : (language === 'en' ? 'Add Item' : 'आइटम जोड़ें')}
+                  ? (language === 'en' ? 'Update Item' : 'à¤†à¤‡à¤Ÿà¤® à¤…à¤ªà¤¡à¥‡à¤Ÿ à¤•à¤°à¥‡à¤‚')
+                  : (language === 'en' ? 'Add Item' : 'à¤†à¤‡à¤Ÿà¤® à¤œà¥‹à¤¡à¤¼à¥‡à¤‚')}
               </Button>
             </div>
           </DialogContent>
@@ -446,11 +465,11 @@ export function InventoryManagement() {
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="all">{language === 'en' ? 'All' : 'सभी'}</TabsTrigger>
-            <TabsTrigger value="food">{language === 'en' ? 'Food' : 'भोजन'}</TabsTrigger>
-            <TabsTrigger value="medicine">{language === 'en' ? 'Medicine' : 'दवा'}</TabsTrigger>
+            <TabsTrigger value="all">{language === 'en' ? 'All' : 'à¤¸à¤­à¥€'}</TabsTrigger>
+            <TabsTrigger value="food">{language === 'en' ? 'Food' : 'à¤­à¥‹à¤œà¤¨'}</TabsTrigger>
+            <TabsTrigger value="medicine">{language === 'en' ? 'Medicine' : 'à¤¦à¤µà¤¾'}</TabsTrigger>
             <TabsTrigger value="low">
-              {language === 'en' ? 'Low Stock' : 'कम स्टॉक'}
+              {language === 'en' ? 'Low Stock' : 'à¤•à¤® à¤¸à¥à¤Ÿà¥‰à¤•'}
               {lowStockItems.length > 0 && (
                 <Badge className="ml-1 bg-red-500">{lowStockItems.length}</Badge>
               )}
@@ -461,7 +480,7 @@ export function InventoryManagement() {
             {filteredInventory.length === 0 ? (
               <Card className="p-8 text-center bg-white">
                 <p className="text-gray-500">
-                  {language === 'en' ? 'No items found' : 'कोई आइटम नहीं मिला'}
+                  {language === 'en' ? 'No items found' : 'à¤•à¥‹à¤ˆ à¤†à¤‡à¤Ÿà¤® à¤¨à¤¹à¥€à¤‚ à¤®à¤¿à¤²à¤¾'}
                 </p>
               </Card>
             ) : (
@@ -487,8 +506,8 @@ export function InventoryManagement() {
                           <div>
                             <h3 className="text-gray-900">{item.name}</h3>
                             <p className="text-sm text-gray-600">
-                              {item.supplier && `${item.supplier} • `}
-                              {language === 'en' ? 'Restocked' : 'पुनः स्टॉक'}: {item.lastRestocked}
+                              {item.supplier && `${item.supplier} â€¢ `}
+                              {language === 'en' ? 'Restocked' : 'à¤ªà¥à¤¨à¤ƒ à¤¸à¥à¤Ÿà¥‰à¤•'}: {item.lastRestocked}
                             </p>
                           </div>
                           <Badge className={item.quantity < item.minThreshold ? 'bg-red-500' : 'bg-green-500'}>
@@ -502,7 +521,7 @@ export function InventoryManagement() {
                             <span>
                               {language === 'en'
                                 ? `Low stock! Minimum: ${item.minThreshold} ${item.unit}`
-                                : `कम स्टॉक! न्यूनतम: ${item.minThreshold} ${item.unit}`}
+                                : `à¤•à¤® à¤¸à¥à¤Ÿà¥‰à¤•! à¤¨à¥à¤¯à¥‚à¤¨à¤¤à¤®: ${item.minThreshold} ${item.unit}`}
                             </span>
                           </div>
                         )}
@@ -510,14 +529,14 @@ export function InventoryManagement() {
                         <div className="grid grid-cols-2 gap-2 text-sm mb-3">
                           <div>
                             <span className="text-gray-500 text-xs">
-                              {language === 'en' ? 'Cost/Unit' : 'लागत/इकाई'}:
+                              {language === 'en' ? 'Cost/Unit' : 'à¤²à¤¾à¤—à¤¤/à¤‡à¤•à¤¾à¤ˆ'}:
                             </span>
-                            <div className="text-gray-900">₹{item.cost}</div>
+                            <div className="text-gray-900">â‚¹{item.cost}</div>
                           </div>
                           {item.expiryDate && (
                             <div>
                               <span className="text-gray-500 text-xs">
-                                {language === 'en' ? 'Expires' : 'समाप्त'}:
+                                {language === 'en' ? 'Expires' : 'à¤¸à¤®à¤¾à¤ªà¥à¤¤'}:
                               </span>
                               <div className="text-gray-900 text-xs">{new Date(item.expiryDate).toLocaleDateString()}</div>
                             </div>
@@ -531,7 +550,7 @@ export function InventoryManagement() {
                             className="flex-1"
                             onClick={() => handleRestock(item, 50)}
                           >
-                            {language === 'en' ? 'Quick Restock +50' : 'त्वरित पुनः स्टॉक +50'}
+                            {language === 'en' ? 'Quick Restock +50' : 'à¤¤à¥à¤µà¤°à¤¿à¤¤ à¤ªà¥à¤¨à¤ƒ à¤¸à¥à¤Ÿà¥‰à¤• +50'}
                           </Button>
                           <Button
                             size="sm"

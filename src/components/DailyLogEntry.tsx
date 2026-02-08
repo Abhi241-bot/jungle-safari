@@ -1,31 +1,19 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { API_BASE_URL } from '../config';
 import axios from 'axios';
-import { API_BASE_URL } from '../config';
 import { AppContext, User as AppUser } from '../App';
-import { API_BASE_URL } from '../config';
 import { mockAnimals, translations } from './mockData';
-import { API_BASE_URL } from '../config';
 import { ArrowLeft, Send, Loader, AlertTriangle, Server, Mic, Square, Play, Trash2, FileText, HeartPulse, Camera, Video, Share2, Smile, Meh, Frown, Angry, User } from 'lucide-react';
-import { API_BASE_URL } from '../config';
 import { Button } from './ui/button';
-import { API_BASE_URL } from '../config';
 import { Card } from './ui/card';
-import { API_BASE_URL } from '../config';
 import { Textarea } from './ui/textarea';
-import { API_BASE_URL } from '../config';
 import { Label } from './ui/label';
-import { API_BASE_URL } from '../config'; // This import was missing
 import { toast } from 'sonner';
-import { API_BASE_URL } from '../config';
 import { Input } from './ui/input';
-import { API_BASE_URL } from '../config'; // For file inputs
 import { useReactMediaRecorder } from 'react-media-recorder';
-import { API_BASE_URL } from '../config';
 import { motion } from 'motion/react';
-import { API_BASE_URL } from '../config';
 import { Checkbox } from './ui/checkbox';
-import { API_BASE_URL } from '../config';
+import { GuidedVoiceRecording } from './GuidedVoiceRecording';
 
 // Define the structure of the data returned from the API
 interface ProcessedData {
@@ -56,6 +44,12 @@ export function DailyLogEntry() {
   const [selectedUsersToShare, setSelectedUsersToShare] = useState<string[]>([]); // Array of user IDs to share with
 
   const [allUsers, setAllUsers] = useState<AppUser[]>([]); // State for live user data
+
+  // Guided Voice Recording State
+  const [showGuidedRecording, setShowGuidedRecording] = useState(false);
+  const [voiceRecordingBlob, setVoiceRecordingBlob] = useState<Blob | null>(null);
+  const [voiceTranscript, setVoiceTranscript] = useState<string>('');
+
   // API State
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -119,6 +113,36 @@ export function DailyLogEntry() {
     } catch (err: any) {
       toast.error(t.processingError);
       console.error("Audio Processing Error:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handler for guided voice recording completion
+  const handleGuidedRecordingComplete = async (audioBlob: Blob, transcript: string) => {
+    setShowGuidedRecording(false);
+    setVoiceRecordingBlob(audioBlob);
+    setVoiceTranscript(transcript);
+
+    // Process the guided recording through the backend
+    toast.info(t.transcribingAudio);
+    setIsLoading(true);
+
+    const formData = new FormData();
+    formData.append('audio', audioBlob, 'guided-recording.webm');
+    formData.append('date', new Date().toISOString());
+    formData.append('prefix', 'Guided 16-question inspection log: ');
+    formData.append('animalId', selectedAnimal?.id || '');
+
+    try {
+      const response = await axios.post(`${API_BASE_URL}/process_audio_observation`, formData);
+      setProcessedData(response.data);
+      const displayText = response.data.fullObservationText || response.data.daily_animal_health_monitoring || '';
+      setGeneralObservationText(displayText);
+      toast.success(t.observationProcessedSuccess);
+    } catch (err: any) {
+      toast.error(t.processingError);
+      console.error("Guided Recording Processing Error:", err);
     } finally {
       setIsLoading(false);
     }
@@ -259,6 +283,16 @@ export function DailyLogEntry() {
       </div>
 
       <div className="p-6 space-y-6">
+        {/* Guided Voice Recording Button */}
+        <Button
+          onClick={() => setShowGuidedRecording(true)}
+          className="w-full h-16 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-lg font-semibold shadow-lg"
+          disabled={isLoading}
+        >
+          <Mic className="w-6 h-6 mr-3" />
+          {language === 'en' ? 'Start Guided Voice Recording (16 Questions)' : 'निर्देशित वॉयस रिकॉर्डिंग शुरू करें (16 प्रश्न)'}
+        </Button>
+
         {/* Health Assessment */}
         <Card className="p-4 bg-white shadow-md">
           <Label className="flex items-center gap-2 text-gray-700 mb-3">
@@ -573,6 +607,15 @@ export function DailyLogEntry() {
           </Card>
         )}
       </div>
+
+      {/* Guided Voice Recording Modal */}
+      {showGuidedRecording && (
+        <GuidedVoiceRecording
+          language={language}
+          onComplete={handleGuidedRecordingComplete}
+          onCancel={() => setShowGuidedRecording(false)}
+        />
+      )}
     </div>
   );
 }
