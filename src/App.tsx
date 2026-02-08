@@ -6,6 +6,7 @@ import { AdminDashboard } from './components/AdminDashboard';
 import { VetDashboard } from './components/VetDashboard';
 import { OfficerDashboard } from './components/OfficerDashboard';
 import { DailyLogEntry } from './components/DailyLogEntry';
+import { EnhancedDailyLogEntry } from './components/EnhancedDailyLogEntry';
 import { AnimalProfile } from './components/AnimalProfile';
 import { UserManagement } from './components/UserManagement';
 import { SettingsScreen } from './components/SettingsScreen';
@@ -113,6 +114,8 @@ export default function App() {
 
     switch (currentScreen) {
       case 'daily-log':
+        return <EnhancedDailyLogEntry />;
+      case 'daily-log-legacy':
         return <DailyLogEntry />;
       case 'animal-profile':
         return <AnimalProfile />;
