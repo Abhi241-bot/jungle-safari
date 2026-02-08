@@ -1,37 +1,35 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { API_BASE_URL } from '../config';
 import axios from 'axios';
-import { API_BASE_URL } from '../config';
 import { AppContext, Animal, Alert as AlertType } from '../App';
-import { API_BASE_URL } from '../config';
 import { translations } from './mockData';
-import { API_BASE_URL } from '../config';
 import { AlertCircle, Bell, Plus, Search, Menu, AlertTriangle, Calendar, History, Home, List, Settings, ClipboardList } from 'lucide-react';
-import { API_BASE_URL } from '../config';
 import { motion } from 'motion/react';
-import { API_BASE_URL } from '../config';
 import { Button } from './ui/button';
-import { API_BASE_URL } from '../config';
 import { Card } from './ui/card';
-import { API_BASE_URL } from '../config';
 import { Input } from './ui/input';
-import { API_BASE_URL } from '../config';
 import { Badge } from './ui/badge';
-import { API_BASE_URL } from '../config';
 import { AnimalCard } from './AnimalCard';
-import { API_BASE_URL } from '../config';
 import { TaskWidget } from './TaskWidget';
-import { API_BASE_URL } from '../config';
 import { ImageWithFallback } from './figma/ImageWithFallback';
-import { API_BASE_URL } from '../config';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet';
-import { API_BASE_URL } from '../config';
 import { Loader } from 'lucide-react';
-import { API_BASE_URL } from '../config';
 import { toast } from 'sonner';
-import { API_BASE_URL } from '../config';
+import { SubmissionStatus } from './SubmissionStatus';
 
-export function ZookeeperDashboard() {
+interface LogSchedule {
+  morningSubmitted: boolean;
+  eveningSubmitted: boolean;
+  lastChecked: string;
+}
+
+interface ZookeeperDashboardProps {
+  schedule: LogSchedule;
+}
+
+export function ZookeeperDashboard({ schedule }: ZookeeperDashboardProps) {
+
+
   const { currentUser, language, setCurrentScreen, setSelectedAnimal, setShowSOS } = useContext(AppContext);
   const [searchQuery, setSearchQuery] = useState('');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -365,6 +363,19 @@ export function ZookeeperDashboard() {
               </motion.div>
             </div>
           </Card>
+        </motion.div>
+
+        {/* Submission Status */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+        >
+          <SubmissionStatus
+            morningSubmitted={schedule.morningSubmitted}
+            eveningSubmitted={schedule.eveningSubmitted}
+            language={language}
+          />
         </motion.div>
 
         {/* My Animals Section */}

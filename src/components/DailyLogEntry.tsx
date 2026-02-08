@@ -27,7 +27,11 @@ interface ProcessedData {
   [key: string]: any; // Allow for other properties
 }
 
-export function DailyLogEntry() {
+interface DailyLogEntryProps {
+  onLogSubmitted?: (slot: 'morning' | 'evening') => void;
+}
+
+export function DailyLogEntry({ onLogSubmitted }: DailyLogEntryProps = {}) {
   const { currentUser, language, setCurrentScreen, selectedAnimal } = useContext(AppContext);
   const t = translations[language];
 
@@ -229,6 +233,13 @@ export function DailyLogEntry() {
       console.log("✅ processedData state should now be set");
       toast.success(t.observationProcessedSuccess);
       if (selectedUsersToShare.length > 0) console.log("TODO: Sharing with users:", selectedUsersToShare); // Placeholder for future sharing logic
+
+      // Mark log as submitted for the appropriate time slot
+      if (onLogSubmitted) {
+        const hour = new Date().getHours();
+        const slot = hour < 16 ? 'morning' : 'evening';
+        onLogSubmitted(slot);
+      }
 
       // Don't clear form immediately - let user see the AI summary first
       // User can manually clear or submit another observation

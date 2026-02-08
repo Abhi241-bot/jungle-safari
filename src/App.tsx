@@ -16,6 +16,7 @@ import { MedicationTracker } from './components/MedicationTracker';
 import { SharedLogsViewer } from './components/SharedLogsViewer';
 import { Toaster } from './components/ui/sonner';
 import { AnimatePresence } from 'motion/react';
+import { useLogScheduler } from './hooks/useLogScheduler';
 
 export type UserRole = 'zookeeper' | 'admin' | 'vet' | 'officer';
 export type Language = 'en' | 'hi';
@@ -92,6 +93,13 @@ export default function App() {
   const [showSOS, setShowSOS] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
 
+  // Log scheduling for zookeepers
+  const { schedule, markSubmitted } = useLogScheduler(
+    currentUser?.role || '',
+    () => setCurrentScreen('addLog'),
+    language
+  );
+
   // Register service worker for push notifications
   useEffect(() => {
     if ('serviceWorker' in navigator) {
@@ -113,7 +121,7 @@ export default function App() {
 
     switch (currentScreen) {
       case 'daily-log':
-        return <DailyLogEntry />;
+        return <DailyLogEntry onLogSubmitted={markSubmitted} />;
       case 'animal-profile':
         return <AnimalProfile />;
       case 'userManagement':
@@ -131,7 +139,7 @@ export default function App() {
       default:
         switch (currentUser.role) {
           case 'zookeeper':
-            return <ZookeeperDashboard />;
+            return <ZookeeperDashboard schedule={schedule} />;
           case 'admin':
             return <AdminDashboard />;
           case 'vet':
@@ -139,7 +147,7 @@ export default function App() {
           case 'officer':
             return <OfficerDashboard />;
           default:
-            return <ZookeeperDashboard />;
+            return <ZookeeperDashboard schedule={schedule} />;
         }
     }
   };
