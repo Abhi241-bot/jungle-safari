@@ -54,6 +54,28 @@ class ZooAIModel:
                 **Animal Being Observed:** {animal_name}
                 **Date of Observation:** {date}
 
+                **FORMAT DETECTION:**
+                - If observation starts with "Guided 16-question inspection log:", this is a STRUCTURED FORMAT
+                - Otherwise, treat as FREE-FORM observation text
+                
+                **FOR GUIDED 16-QUESTION FORMAT:**
+                The observation contains answers to 16 specific questions. Map them as follows:
+                - Q1 (Feed/water/digestion) → `feed_given_as_prescribed`, `feed_and_supplements_available`
+                - Q2 (Injury/illness) → `normal_behaviour_status`, `normal_behaviour_details`
+                - Q3 (Behavior/activity) → Include in `daily_animal_health_monitoring`
+                - Q4 (Mating/pregnancy) → Include in `daily_animal_health_monitoring`
+                - Q5 (Death/critical) → Include in `daily_animal_health_monitoring`
+                - Q6 (Enclosure cleanliness) → `enclosure_cleaned_properly`
+                - Q7 (Hygiene/pest/safety) → Include in `daily_wildlife_monitoring`
+                - Q8 (Staff status) → Extract name to `incharge_signature`
+                - Q9 (Other observations) → `other_animal_requirements`
+                - Q10 (Enclosure checked) → `enclosure_cleaned_properly`
+                - Q11 (Water trough) → `clean_drinking_water_provided`
+                - Q12-Q15 (Fence/moat/pest/staff) → Include in `daily_wildlife_monitoring`
+                - Q16 (Kraal chemical) → Include in `daily_wildlife_monitoring`
+                
+                Synthesize all Q1-Q9 answers into a comprehensive `daily_animal_health_monitoring` summary.
+
                 **CRITICAL INSTRUCTIONS:**
                 1.  Read the observation text VERY CAREFULLY. It may be in Hindi, English, or mixed.
                 2.  EXTRACT SPECIFIC DETAILS from the text - do NOT make generic assumptions.
