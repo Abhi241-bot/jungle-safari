@@ -1,31 +1,20 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { API_BASE_URL } from '../config';
 import axios from 'axios';
-import { API_BASE_URL } from '../config';
 import { AppContext, Animal, Alert as AlertType, Observation } from '../App';
-import { API_BASE_URL } from '../config';
 import { translations } from './mockData';
-import { API_BASE_URL } from '../config';
-import { Bell, Menu, Stethoscope, FileText, Pill, Activity, Settings, AlertTriangle, Home, List } from 'lucide-react';
-import { API_BASE_URL } from '../config';
+import { Bell, Menu, Stethoscope, FileText, Pill, Activity, Settings, AlertTriangle, Home, List, ClipboardList } from 'lucide-react';
 import { motion } from 'motion/react';
-import { API_BASE_URL } from '../config';
 import { Button } from './ui/button';
-import { API_BASE_URL } from '../config';
 import { Card } from './ui/card';
-import { API_BASE_URL } from '../config';
 import { Badge } from './ui/badge';
-import { API_BASE_URL } from '../config';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { API_BASE_URL } from '../config';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet';
-import { API_BASE_URL } from '../config';
 import { ImageWithFallback } from './figma/ImageWithFallback';
-import { API_BASE_URL } from '../config';
 import { Loader } from 'lucide-react';
-import { API_BASE_URL } from '../config';
 import { toast } from 'sonner';
-import { API_BASE_URL } from '../config';
+import { ZookeeperLogsList } from './ZookeeperLogsList';
+import { ZookeeperLogsViewer } from './ZookeeperLogsViewer';
 
 export function VetDashboard() {
   const { currentUser, language, setCurrentScreen, setSelectedAnimal } = useContext(AppContext);
@@ -38,6 +27,12 @@ export function VetDashboard() {
   const [alerts, setAlerts] = useState<AlertType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Zookeeper Logs State
+  const [selectedZookeeperId, setSelectedZookeeperId] = useState<string | null>(null);
+  const [selectedZookeeperName, setSelectedZookeeperName] = useState<string>('');
+  const [isLogsViewerOpen, setIsLogsViewerOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'logs'>('dashboard');
 
 
   useEffect(() => {
@@ -246,196 +241,241 @@ export function VetDashboard() {
           </div>
         </div>
 
+        <div className="flex items-center gap-2 mb-4">
+          <Button
+            variant={activeTab === 'dashboard' ? 'default' : 'ghost'}
+            className={activeTab === 'dashboard' ? 'bg-white text-blue-600' : 'text-white hover:bg-white/20'}
+            onClick={() => setActiveTab('dashboard')}
+          >
+            <Home className="w-4 h-4 mr-2" />
+            {language === 'en' ? 'Dashboard' : 'डैशबोर्ड'}
+          </Button>
+          <Button
+            variant={activeTab === 'logs' ? 'default' : 'ghost'}
+            className={activeTab === 'logs' ? 'bg-white text-blue-600' : 'text-white hover:bg-white/20'}
+            onClick={() => setActiveTab('logs')}
+          >
+            <ClipboardList className="w-4 h-4 mr-2" />
+            {language === 'en' ? 'Zookeeper Logs' : 'चिड़ियाघर कर्मचारी लॉग'}
+          </Button>
+        </div>
+
         <h1 className="text-white">
-          {language === 'en' ? 'Health Dashboard' : 'स्वास्थ्य डैशबोर्ड'}
+          {activeTab === 'dashboard'
+            ? (language === 'en' ? 'Health Dashboard' : 'स्वास्थ्य डैशबोर्ड')
+            : (language === 'en' ? 'Zookeeper Logs' : 'चिड़ियाघर कर्मचारी लॉग')
+          }
         </h1>
       </div>
 
       <div className="p-6 space-y-6">
-        {/* Stats */}
-        <div className="grid grid-cols-2 gap-3">
-          <Card className="p-4 bg-gradient-to-br from-red-500 to-red-600 text-white">
-            <div className="flex items-center justify-between mb-2">
-              <Stethoscope className="w-6 h-6" />
-            </div>
-            <div className="text-2xl">{healthReports.length}</div>
-            <div className="text-sm opacity-90">
-              {language === 'en' ? 'Need Attention' : 'ध्यान चाहिए'}
-            </div>
-          </Card>
-
-          <Card className="p-4 bg-gradient-to-br from-green-500 to-green-600 text-white">
-            <div className="flex items-center justify-between mb-2">
-              <Activity className="w-6 h-6" />
-            </div>
-            <div className="text-2xl">{animals.length - healthReports.length}</div>
-            <div className="text-sm opacity-90">
-              {language === 'en' ? 'Healthy' : 'स्वस्थ'}
-            </div>
-          </Card>
-        </div>
-
-        {/* Quick Action - Medication Tracker */}
-        <Button
-          onClick={() => setCurrentScreen('medication')}
-          className="w-full h-14 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 shadow-lg"
-        >
-          <Pill className="w-5 h-5 mr-2" />
-          {language === 'en' ? 'Medication & Treatment Tracker' : 'दवा और उपचार ट्रैकर'}
-        </Button>
-
-        {/* Tabs */}
-        <Tabs defaultValue="reports" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="reports">
-              {t.healthReports}
-            </TabsTrigger>
-            <TabsTrigger value="logs">
-              {t.voiceLogs}
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="reports" className="space-y-3 mt-4">
-            {healthReports.length > 0 ? (
-              healthReports.map((animal, index) => (
-                <motion.div
-                  key={animal.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                >
-                  <Card
-                    className="p-4 bg-white cursor-pointer hover:shadow-lg transition-shadow"
-                    onClick={() => {
-                      setSelectedAnimal(animal);
-                      setCurrentScreen('animal-profile');
-                    }}
-                  >
-                    <div className="flex gap-4">
-                      <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
-                        <ImageWithFallback
-                          src={animal.image}
-                          alt={animal.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-start justify-between mb-2">
-                          <div>
-                            <h3 className="text-blue-900">{animal.name}</h3>
-                            <p className="text-sm text-gray-600">
-                              {animal.species} #{animal.number}
-                            </p>
-                          </div>
-                          <Badge
-                            className={
-                              animal.health === 'poor'
-                                ? 'bg-red-500 text-white'
-                                : 'bg-yellow-500 text-white'
-                            }
-                          >
-                            {animal.health === 'poor' ? t.poor : t.fair}
-                          </Badge>
-                        </div>
-                        {animal.notes && (
-                          <p className="text-sm text-gray-700 mb-2">{animal.notes}</p>
-                        )}
-                        <div className="flex gap-2">
-                          <Button 
-                            size="sm" 
-                            className="bg-blue-600 hover:bg-blue-700 h-8"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setCurrentScreen('medication');
-                            }}
-                          >
-                            <Pill className="w-4 h-4 mr-1" />
-                            {language === 'en' ? 'Prescribe' : 'नुस्खा'}
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="border-blue-600 text-blue-600 hover:bg-blue-50 h-8"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedAnimal(animal);
-                              setCurrentScreen('daily-log');
-                            }}
-                          >
-                            <FileText className="w-4 h-4 mr-1" />
-                            {language === 'en' ? 'Add Note' : 'नोट जोड़ें'}
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
-                </motion.div>
-              ))
-            ) : (
-              <Card className="p-8 text-center bg-white">
-                <Stethoscope className="w-12 h-12 text-green-500 mx-auto mb-3" />
-                <p className="text-gray-600">
-                  {language === 'en'
-                    ? 'All animals are healthy!'
-                    : 'सभी जानवर स्वस्थ हैं!'}
-                </p>
+        {activeTab === 'dashboard' ? (
+          <>
+            {/* Stats */}
+            <div className="grid grid-cols-2 gap-3">
+              <Card className="p-4 bg-gradient-to-br from-red-500 to-red-600 text-white">
+                <div className="flex items-center justify-between mb-2">
+                  <Stethoscope className="w-6 h-6" />
+                </div>
+                <div className="text-2xl">{healthReports.length}</div>
+                <div className="text-sm opacity-90">
+                  {language === 'en' ? 'Need Attention' : 'ध्यान चाहिए'}
+                </div>
               </Card>
-            )}
-          </TabsContent>
 
-          <TabsContent value="logs" className="space-y-3 mt-4">
-            {recentLogs.map((log, index) => log.animal && (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <Card className="p-4 bg-white">
-                  <div className="flex gap-3">
-                    <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
-                      <ImageWithFallback
-                        src={log.animal.image}
-                        alt={log.animal.name}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-start justify-between mb-2">
-                        <div>
-                          <h3 className="text-blue-900 text-sm">{log.animal.name}</h3>
-                          <p className="text-xs text-gray-500">{log.date}</p>
+              <Card className="p-4 bg-gradient-to-br from-green-500 to-green-600 text-white">
+                <div className="flex items-center justify-between mb-2">
+                  <Activity className="w-6 h-6" />
+                </div>
+                <div className="text-2xl">{animals.length - healthReports.length}</div>
+                <div className="text-sm opacity-90">
+                  {language === 'en' ? 'Healthy' : 'स्वस्थ'}
+                </div>
+              </Card>
+            </div>
+
+            {/* Quick Action - Medication Tracker */}
+            <Button
+              onClick={() => setCurrentScreen('medication')}
+              className="w-full h-14 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 shadow-lg"
+            >
+              <Pill className="w-5 h-5 mr-2" />
+              {language === 'en' ? 'Medication & Treatment Tracker' : 'दवा और उपचार ट्रैकर'}
+            </Button>
+
+            {/* Tabs */}
+            <Tabs defaultValue="reports" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="reports">
+                  {t.healthReports}
+                </TabsTrigger>
+                <TabsTrigger value="logs">
+                  {t.voiceLogs}
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="reports" className="space-y-3 mt-4">
+                {healthReports.length > 0 ? (
+                  healthReports.map((animal, index) => (
+                    <motion.div
+                      key={animal.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                    >
+                      <Card
+                        className="p-4 bg-white cursor-pointer hover:shadow-lg transition-shadow"
+                        onClick={() => {
+                          setSelectedAnimal(animal);
+                          setCurrentScreen('animal-profile');
+                        }}
+                      >
+                        <div className="flex gap-4">
+                          <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
+                            <ImageWithFallback
+                              src={animal.image}
+                              alt={animal.name}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-start justify-between mb-2">
+                              <div>
+                                <h3 className="text-blue-900">{animal.name}</h3>
+                                <p className="text-sm text-gray-600">
+                                  {animal.species} #{animal.number}
+                                </p>
+                              </div>
+                              <Badge
+                                className={
+                                  animal.health === 'poor'
+                                    ? 'bg-red-500 text-white'
+                                    : 'bg-yellow-500 text-white'
+                                }
+                              >
+                                {animal.health === 'poor' ? t.poor : t.fair}
+                              </Badge>
+                            </div>
+                            {animal.notes && (
+                              <p className="text-sm text-gray-700 mb-2">{animal.notes}</p>
+                            )}
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                className="bg-blue-600 hover:bg-blue-700 h-8"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setCurrentScreen('medication');
+                                }}
+                              >
+                                <Pill className="w-4 h-4 mr-1" />
+                                {language === 'en' ? 'Prescribe' : 'नुस्खा'}
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="border-blue-600 text-blue-600 hover:bg-blue-50 h-8"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedAnimal(animal);
+                                  setCurrentScreen('daily-log');
+                                }}
+                              >
+                                <FileText className="w-4 h-4 mr-1" />
+                                {language === 'en' ? 'Add Note' : 'नोट जोड़ें'}
+                              </Button>
+                            </div>
+                          </div>
                         </div>
-                        <Badge
-                          className={
-                            log.type === 'voice'
-                              ? 'bg-purple-100 text-purple-800'
-                              : log.type === 'health' || log.type === 'media'
-                              ? 'bg-orange-100 text-orange-800'
-                              : 'bg-blue-100 text-blue-800'
-                          }
-                        >
-                          {log.type === 'media' ? (language === 'en' ? 'Media' : 'मीडिया') : log.type === 'voice'
-                            ? language === 'en'
-                              ? 'Voice'
-                              : 'वॉइस'
-                            : log.type === 'health'
-                            ? language === 'en'
-                              ? 'Health'
-                              : 'स्वास्थ्य'
-                            : language === 'en'
-                            ? 'Checkup'
-                            : 'जांच'}
-                        </Badge>
+                      </Card>
+                    </motion.div>
+                  ))
+                ) : (
+                  <Card className="p-8 text-center bg-white">
+                    <Stethoscope className="w-12 h-12 text-green-500 mx-auto mb-3" />
+                    <p className="text-gray-600">
+                      {language === 'en'
+                        ? 'All animals are healthy!'
+                        : 'सभी जानवर स्वस्थ हैं!'}
+                    </p>
+                  </Card>
+                )}
+              </TabsContent>
+
+              <TabsContent value="logs" className="space-y-3 mt-4">
+                {recentLogs.map((log, index) => log.animal && (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                  >
+                    <Card className="p-4 bg-white">
+                      <div className="flex gap-3">
+                        <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
+                          <ImageWithFallback
+                            src={log.animal.image}
+                            alt={log.animal.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-start justify-between mb-2">
+                            <div>
+                              <h3 className="text-blue-900 text-sm">{log.animal.name}</h3>
+                              <p className="text-xs text-gray-500">{log.date}</p>
+                            </div>
+                            <Badge
+                              className={
+                                log.type === 'voice'
+                                  ? 'bg-purple-100 text-purple-800'
+                                  : log.type === 'health' || log.type === 'media'
+                                    ? 'bg-orange-100 text-orange-800'
+                                    : 'bg-blue-100 text-blue-800'
+                              }
+                            >
+                              {log.type === 'media' ? (language === 'en' ? 'Media' : 'मीडिया') : log.type === 'voice'
+                                ? language === 'en'
+                                  ? 'Voice'
+                                  : 'वॉइस'
+                                : log.type === 'health'
+                                  ? language === 'en'
+                                    ? 'Health'
+                                    : 'स्वास्थ्य'
+                                  : language === 'en'
+                                    ? 'Checkup'
+                                    : 'जांच'}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-gray-700">{log.note}</p>
+                        </div>
                       </div>
-                      <p className="text-sm text-gray-700">{log.note}</p>
-                    </div>
-                  </div>
-                </Card>
-              </motion.div>
-            ))}
-          </TabsContent>
-        </Tabs>
+                    </Card>
+                  </motion.div>
+                ))}
+              </TabsContent>
+            </Tabs>
+          </>
+        ) : (
+          // Logs View
+          <>
+            <ZookeeperLogsList
+              language={language}
+              onZookeeperClick={(id, name) => {
+                setSelectedZookeeperId(id);
+                setSelectedZookeeperName(name);
+                setIsLogsViewerOpen(true);
+              }}
+            />
+            <ZookeeperLogsViewer
+              zookeeperId={selectedZookeeperId || ''}
+              zookeeperName={selectedZookeeperName}
+              language={language}
+              isOpen={isLogsViewerOpen}
+              onClose={() => setIsLogsViewerOpen(false)}
+            />
+          </>
+        )}
       </div>
 
       {/* All Animals Sheet */}
@@ -489,8 +529,8 @@ export function VetDashboard() {
                             animal.health === 'good'
                               ? 'bg-green-500 text-white'
                               : animal.health === 'fair'
-                              ? 'bg-yellow-500 text-white'
-                              : 'bg-red-500 text-white'
+                                ? 'bg-yellow-500 text-white'
+                                : 'bg-red-500 text-white'
                           }
                         >
                           {animal.health === 'good' ? t.good : animal.health === 'fair' ? t.fair : t.poor}

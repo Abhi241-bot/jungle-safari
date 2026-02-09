@@ -280,266 +280,311 @@ export function AdminDashboard() {
           </div>
         </div>
 
+        <div className="flex items-center gap-2 mb-4">
+          <Button
+            variant={activeTab === 'dashboard' ? 'default' : 'ghost'}
+            className={activeTab === 'dashboard' ? 'bg-white text-amber-600' : 'text-white hover:bg-white/20'}
+            onClick={() => setActiveTab('dashboard')}
+          >
+            <Home className="w-4 h-4 mr-2" />
+            {language === 'en' ? 'Dashboard' : 'डैशबोर्ड'}
+          </Button>
+          <Button
+            variant={activeTab === 'logs' ? 'default' : 'ghost'}
+            className={activeTab === 'logs' ? 'bg-white text-amber-600' : 'text-white hover:bg-white/20'}
+            onClick={() => setActiveTab('logs')}
+          >
+            <ClipboardList className="w-4 h-4 mr-2" />
+            {language === 'en' ? 'Zookeeper Logs' : 'चिड़ियाघर कर्मचारी लॉग'}
+          </Button>
+        </div>
+
         <h1 className="text-white">
-          {language === 'en' ? 'Dashboard Overview' : 'डैशबोर्ड अवलोकन'}
+          {activeTab === 'dashboard'
+            ? (language === 'en' ? 'Dashboard Overview' : 'डैशबोर्ड अवलोकन')
+            : (language === 'en' ? 'Zookeeper Logs' : 'चिड़ियाघर कर्मचारी लॉग')
+          }
         </h1>
       </div>
 
       <div className="p-6 space-y-6">
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 gap-4">
-          {stats.map((stat, index) => {
-            const Icon = stat.icon;
-            return (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <Card className={`bg-gradient-to-r ${stat.color} text-white p-5`}>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-sm opacity-90 mb-1">{stat.label}</div>
-                      <div className="text-3xl">{stat.value}</div>
-                    </div>
-                    <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
-                      <Icon className="w-8 h-8" />
-                    </div>
-                  </div>
-                </Card>
-              </motion.div>
-            );
-          })}
-        </div>
+        {activeTab === 'dashboard' ? (
+          <>
+            {/* Stats Grid */}
+            <div className="grid grid-cols-1 gap-4">
+              {stats.map((stat, index) => {
+                const Icon = stat.icon;
+                return (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: index * 0.1 }}
+                  >
+                    <Card className={`bg-gradient-to-r ${stat.color} text-white p-5`}>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-sm opacity-90 mb-1">{stat.label}</div>
+                          <div className="text-3xl">{stat.value}</div>
+                        </div>
+                        <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
+                          <Icon className="w-8 h-8" />
+                        </div>
+                      </div>
+                    </Card>
+                  </motion.div>
+                );
+              })}
+            </div>
 
-        {/* Quick Actions */}
-        <Card className="p-6 bg-white">
-          <h3 className="text-amber-900 mb-4">
-            {language === 'en' ? 'Quick Actions' : 'त्वरित कार्य'}
-          </h3>
+            {/* Quick Actions */}
+            <Card className="p-6 bg-white">
+              <h3 className="text-amber-900 mb-4">
+                {language === 'en' ? 'Quick Actions' : 'त्वरित कार्य'}
+              </h3>
 
-          <div className="grid grid-cols-2 gap-3">
-            <Button
-              onClick={() => setCurrentScreen('userManagement')}
-              className="h-20 flex flex-col gap-2 bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
-            >
-              <UserPlus className="w-6 h-6" />
-              <span className="text-xs">{t.manageUsers}</span>
-            </Button>
-
-            <Button
-              onClick={() => setCurrentScreen('inventory')}
-              className="h-20 flex flex-col gap-2 bg-gradient-to-br from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700"
-            >
-              <Package className="w-6 h-6" />
-              <span className="text-xs">{language === 'en' ? 'Inventory' : 'इन्वेंटरी'}</span>
-            </Button>
-          </div>
-
-          {/* Add Animal Dialog - now separate */}
-          <Dialog open={isAnimalDialogOpen} onOpenChange={setIsAnimalDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="w-full h-14 mt-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 shadow-lg">
-                <Plus className="w-5 h-5 mr-2" />
-                {t.addAnimal}
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-md">
-              <DialogHeader>
-                <DialogTitle>
-                  {language === 'en' ? 'Add New Animal' : 'नया जानवर जोड़ें'}
-                </DialogTitle>
-                <DialogDescription>
-                  {language === 'en' ? 'Enter the details of the new animal to add to the zoo.' : 'चिड़ियाघर में जोड़ने के लिए नए जानवर का विवरण दर्ज करें।'}
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div>
-                  <Label>{language === 'en' ? 'Animal Name' : 'जानवर का नाम'}</Label>
-                  <Input
-                    placeholder={language === 'en' ? 'Enter animal name' : 'जानवर का नाम दर्ज करें'}
-                    value={newAnimalName}
-                    onChange={(e) => setNewAnimalName(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label>{language === 'en' ? 'Species' : 'प्रजाति'}</Label>
-                  <Select value={newAnimalSpecies} onValueChange={setNewAnimalSpecies}>
-                    <SelectTrigger>
-                      <SelectValue placeholder={language === 'en' ? 'Select species' : 'प्रजाति चुनें'} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Lion">{language === 'en' ? 'Lion' : 'शेर'}</SelectItem>
-                      <SelectItem value="Tiger">{language === 'en' ? 'Tiger' : 'बाघ'}</SelectItem>
-                      <SelectItem value="Elephant">{language === 'en' ? 'Elephant' : 'हाथी'}</SelectItem>
-                      <SelectItem value="Giraffe">{language === 'en' ? 'Giraffe' : 'जिराफ़'}</SelectItem>
-                      <SelectItem value="Zebra">{language === 'en' ? 'Zebra' : 'ज़ेब्रा'}</SelectItem>
-                      <SelectItem value="Monkey">{language === 'en' ? 'Monkey' : 'बंदर'}</SelectItem>
-                      <SelectItem value="Bear">{language === 'en' ? 'Bear' : 'भालू'}</SelectItem>
-                      <SelectItem value="Deer">{language === 'en' ? 'Deer' : 'हिरण'}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label>{language === 'en' ? 'Age' : 'उम्र'}</Label>
-                  <Input
-                    placeholder={language === 'en' ? 'e.g., 5 years' : 'जैसे, 5 साल'}
-                    value={newAnimalAge}
-                    onChange={(e) => setNewAnimalAge(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label>{language === 'en' ? 'Enclosure' : 'बाड़ा'}</Label>
-                  <Input
-                    placeholder={language === 'en' ? 'e.g., A-12' : 'जैसे, A-12'}
-                    value={newAnimalEnclosure}
-                    onChange={(e) => setNewAnimalEnclosure(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label>{language === 'en' ? 'Initial Health' : 'प्रारंभिक स्वास्थ्य'}</Label>
-                  <Select value={newAnimalHealth} onValueChange={(v) => setNewAnimalHealth(v as any)}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="excellent">{t.excellent}</SelectItem>
-                      <SelectItem value="good">{t.good}</SelectItem>
-                      <SelectItem value="fair">{t.fair}</SelectItem>
-                      <SelectItem value="poor">{t.poor}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label>{language === 'en' ? 'Assign To' : 'को सौंपें'}</Label>
-                  <Select value={newAnimalAssignedTo} onValueChange={setNewAnimalAssignedTo}>
-                    <SelectTrigger>
-                      <SelectValue placeholder={language === 'en' ? 'Select zookeeper' : 'चिड़ियाघर कीपर चुनें'} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {users.filter(u => u.role === 'zookeeper').map((keeper) => (
-                        <SelectItem key={keeper.id} value={keeper.name}>{keeper.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div className="grid grid-cols-2 gap-3">
                 <Button
-                  className="w-full bg-green-600 hover:bg-green-700"
-                  onClick={handleCreateAnimal}
+                  onClick={() => setCurrentScreen('userManagement')}
+                  className="h-20 flex flex-col gap-2 bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
                 >
-                  {language === 'en' ? 'Add Animal' : 'जानवर जोड़ें'}
+                  <UserPlus className="w-6 h-6" />
+                  <span className="text-xs">{t.manageUsers}</span>
+                </Button>
+
+                <Button
+                  onClick={() => setCurrentScreen('inventory')}
+                  className="h-20 flex flex-col gap-2 bg-gradient-to-br from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700"
+                >
+                  <Package className="w-6 h-6" />
+                  <span className="text-xs">{language === 'en' ? 'Inventory' : 'इन्वेंटरी'}</span>
                 </Button>
               </div>
-            </DialogContent>
-          </Dialog>
-        </Card>
 
-        {/* Active Alerts */}
-        <Card className="p-6 bg-white">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-amber-900">{t.alerts}</h3>
-            <Badge className="bg-red-500 text-white">{alerts.length} {language === 'en' ? 'New' : 'नया'}</Badge>
-          </div>
-
-          <div className="space-y-3">
-            {alerts.map((alert) => (
-              <motion.div
-                key={alert.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="flex items-start gap-3 p-4 bg-red-50 border-l-4 border-red-500 rounded"
-              >
-                <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0 mt-1" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-red-900 font-medium">{alert.message}</p>
-                  <p className="text-xs text-gray-600 mt-1">{alert.animalName} • {alert.location}</p>
-                  <div className="flex justify-between items-center mt-2">
-                    <p className="text-xs text-gray-500">{new Date(alert.createdAt).toLocaleTimeString()}</p>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-7 text-xs text-gray-500 hover:bg-gray-200"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDismissAlert(alert.id);
-                      }}
-                    >
-                      {language === 'en' ? 'Dismiss' : 'खारिज करें'}
-                    </Button>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-
-          <Button
-            variant="outline"
-            className="w-full mt-4 border-amber-600 text-amber-600 hover:bg-amber-50"
-          >
-            {language === 'en' ? 'View All Alerts' : 'सभी अलर्ट देखें'}
-          </Button>
-        </Card>
-
-        {/* Recent Users */}
-        <Card className="p-6 bg-white">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-amber-900">
-              {language === 'en' ? 'Team Members' : 'टीम के सदस्य'}
-            </h3>
-          </div>
-
-          <div className="space-y-3">
-            {users.slice(0, 4).map((user, index) => {
-              const roleColors = {
-                zookeeper: 'bg-green-100 text-green-800',
-                admin: 'bg-amber-100 text-amber-800',
-                vet: 'bg-blue-100 text-blue-800',
-                officer: 'bg-purple-100 text-purple-800',
-              };
-
-              const roleLabels = {
-                zookeeper: t.zookeeper,
-                admin: t.admin,
-                vet: t.vet,
-                officer: t.officer,
-              };
-
-              return (
-                <motion.div
-                  key={user.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center text-white">
-                      {user.name.charAt(0)}
+              {/* Add Animal Dialog - now separate */}
+              <Dialog open={isAnimalDialogOpen} onOpenChange={setIsAnimalDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button className="w-full h-14 mt-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 shadow-lg">
+                    <Plus className="w-5 h-5 mr-2" />
+                    {t.addAnimal}
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>
+                      {language === 'en' ? 'Add New Animal' : 'नया जानवर जोड़ें'}
+                    </DialogTitle>
+                    <DialogDescription>
+                      {language === 'en' ? 'Enter the details of the new animal to add to the zoo.' : 'चिड़ियाघर में जोड़ने के लिए नए जानवर का विवरण दर्ज करें।'}
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4">
+                    <div>
+                      <Label>{language === 'en' ? 'Animal Name' : 'जानवर का नाम'}</Label>
+                      <Input
+                        placeholder={language === 'en' ? 'Enter animal name' : 'जानवर का नाम दर्ज करें'}
+                        value={newAnimalName}
+                        onChange={(e) => setNewAnimalName(e.target.value)}
+                      />
                     </div>
                     <div>
-                      <div className="text-gray-900">{user.name}</div>
-                      <div className="text-sm text-gray-500">
-                        {user.permissions.length} {language === 'en' ? 'permissions' : 'अनुमतियाँ'}
+                      <Label>{language === 'en' ? 'Species' : 'प्रजाति'}</Label>
+                      <Select value={newAnimalSpecies} onValueChange={setNewAnimalSpecies}>
+                        <SelectTrigger>
+                          <SelectValue placeholder={language === 'en' ? 'Select species' : 'प्रजाति चुनें'} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Lion">{language === 'en' ? 'Lion' : 'शेर'}</SelectItem>
+                          <SelectItem value="Tiger">{language === 'en' ? 'Tiger' : 'बाघ'}</SelectItem>
+                          <SelectItem value="Elephant">{language === 'en' ? 'Elephant' : 'हाथी'}</SelectItem>
+                          <SelectItem value="Giraffe">{language === 'en' ? 'Giraffe' : 'जिराफ़'}</SelectItem>
+                          <SelectItem value="Zebra">{language === 'en' ? 'Zebra' : 'ज़ेब्रा'}</SelectItem>
+                          <SelectItem value="Monkey">{language === 'en' ? 'Monkey' : 'बंदर'}</SelectItem>
+                          <SelectItem value="Bear">{language === 'en' ? 'Bear' : 'भालू'}</SelectItem>
+                          <SelectItem value="Deer">{language === 'en' ? 'Deer' : 'हिरण'}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label>{language === 'en' ? 'Age' : 'उम्र'}</Label>
+                      <Input
+                        placeholder={language === 'en' ? 'e.g., 5 years' : 'जैसे, 5 साल'}
+                        value={newAnimalAge}
+                        onChange={(e) => setNewAnimalAge(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <Label>{language === 'en' ? 'Enclosure' : 'बाड़ा'}</Label>
+                      <Input
+                        placeholder={language === 'en' ? 'e.g., A-12' : 'जैसे, A-12'}
+                        value={newAnimalEnclosure}
+                        onChange={(e) => setNewAnimalEnclosure(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <Label>{language === 'en' ? 'Initial Health' : 'प्रारंभिक स्वास्थ्य'}</Label>
+                      <Select value={newAnimalHealth} onValueChange={(v) => setNewAnimalHealth(v as any)}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="excellent">{t.excellent}</SelectItem>
+                          <SelectItem value="good">{t.good}</SelectItem>
+                          <SelectItem value="fair">{t.fair}</SelectItem>
+                          <SelectItem value="poor">{t.poor}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label>{language === 'en' ? 'Assign To' : 'को सौंपें'}</Label>
+                      <Select value={newAnimalAssignedTo} onValueChange={setNewAnimalAssignedTo}>
+                        <SelectTrigger>
+                          <SelectValue placeholder={language === 'en' ? 'Select zookeeper' : 'चिड़ियाघर कीपर चुनें'} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {users.filter(u => u.role === 'zookeeper').map((keeper) => (
+                            <SelectItem key={keeper.id} value={keeper.name}>{keeper.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <Button
+                      className="w-full bg-green-600 hover:bg-green-700"
+                      onClick={handleCreateAnimal}
+                    >
+                      {language === 'en' ? 'Add Animal' : 'जानवर जोड़ें'}
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </Card>
+
+            {/* Active Alerts */}
+            <Card className="p-6 bg-white">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-amber-900">{t.alerts}</h3>
+                <Badge className="bg-red-500 text-white">{alerts.length} {language === 'en' ? 'New' : 'नया'}</Badge>
+              </div>
+
+              <div className="space-y-3">
+                {alerts.map((alert) => (
+                  <motion.div
+                    key={alert.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="flex items-start gap-3 p-4 bg-red-50 border-l-4 border-red-500 rounded"
+                  >
+                    <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0 mt-1" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-red-900 font-medium">{alert.message}</p>
+                      <p className="text-xs text-gray-600 mt-1">{alert.animalName} • {alert.location}</p>
+                      <div className="flex justify-between items-center mt-2">
+                        <p className="text-xs text-gray-500">{new Date(alert.createdAt).toLocaleTimeString()}</p>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 text-xs text-gray-500 hover:bg-gray-200"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDismissAlert(alert.id);
+                          }}
+                        >
+                          {language === 'en' ? 'Dismiss' : 'खारिज करें'}
+                        </Button>
                       </div>
                     </div>
-                  </div>
-                  <Badge className={roleColors[user.role]}>
-                    {roleLabels[user.role]}
-                  </Badge>
-                </motion.div>
-              );
-            })}
-          </div>
+                  </motion.div>
+                ))}
+              </div>
 
-          <Button
-            onClick={() => setCurrentScreen('userManagement')}
-            variant="outline"
-            className="w-full mt-4 border-amber-600 text-amber-600 hover:bg-amber-50"
-          >
-            {language === 'en' ? 'Manage All Users' : 'सभी उपय���गकर्ता प्रबंधित करें'}
-          </Button>
-        </Card>
+              <Button
+                variant="outline"
+                className="w-full mt-4 border-amber-600 text-amber-600 hover:bg-amber-50"
+              >
+                {language === 'en' ? 'View All Alerts' : 'सभी अलर्ट देखें'}
+              </Button>
+            </Card>
+
+            {/* Recent Users */}
+            <Card className="p-6 bg-white">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-amber-900">
+                  {language === 'en' ? 'Team Members' : 'टीम के सदस्य'}
+                </h3>
+              </div>
+
+              <div className="space-y-3">
+                {users.slice(0, 4).map((user, index) => {
+                  const roleColors = {
+                    zookeeper: 'bg-green-100 text-green-800',
+                    admin: 'bg-amber-100 text-amber-800',
+                    vet: 'bg-blue-100 text-blue-800',
+                    officer: 'bg-purple-100 text-purple-800',
+                  };
+
+                  const roleLabels = {
+                    zookeeper: t.zookeeper,
+                    admin: t.admin,
+                    vet: t.vet,
+                    officer: t.officer,
+                  };
+
+                  return (
+                    <motion.div
+                      key={user.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center text-white">
+                          {user.name.charAt(0)}
+                        </div>
+                        <div>
+                          <div className="text-gray-900">{user.name}</div>
+                          <div className="text-sm text-gray-500">
+                            {user.permissions.length} {language === 'en' ? 'permissions' : 'अनुमतियाँ'}
+                          </div>
+                        </div>
+                      </div>
+                      <Badge className={roleColors[user.role]}>
+                        {roleLabels[user.role]}
+                      </Badge>
+                    </motion.div>
+                  );
+                })}
+              </div>
+
+              <Button
+                onClick={() => setCurrentScreen('userManagement')}
+                variant="outline"
+                className="w-full mt-4 border-amber-600 text-amber-600 hover:bg-amber-50"
+              >
+                {language === 'en' ? 'Manage All Users' : 'सभी उपय���गकर्ता प्रबंधित करें'}
+              </Button>
+            </Card>
+          </>
+        ) : (
+          // Logs View
+          <>
+            <ZookeeperLogsList
+              language={language}
+              onZookeeperClick={(id, name) => {
+                setSelectedZookeeperId(id);
+                setSelectedZookeeperName(name);
+                setIsLogsViewerOpen(true);
+              }}
+            />
+            <ZookeeperLogsViewer
+              zookeeperId={selectedZookeeperId || ''}
+              zookeeperName={selectedZookeeperName}
+              language={language}
+              isOpen={isLogsViewerOpen}
+              onClose={() => setIsLogsViewerOpen(false)}
+            />
+          </>
+        )}
       </div>
 
       {/* All Animals Sheet */}
