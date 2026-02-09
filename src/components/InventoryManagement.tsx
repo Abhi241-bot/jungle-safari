@@ -1,37 +1,21 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { API_BASE_URL } from '../config';
 import axios from 'axios';
-import { API_BASE_URL } from '../config';
 import { AppContext } from '../App';
-import { API_BASE_URL } from '../config';
 import { translations } from './mockData';
-import { API_BASE_URL } from '../config';
 import { ArrowLeft, Plus, AlertTriangle, Package, Pill, Apple, Search, TrendingDown, Edit, Trash2, Download, FileText } from 'lucide-react';
-import { API_BASE_URL } from '../config';
 import { motion } from 'motion/react';
-import { API_BASE_URL } from '../config';
 import { Button } from './ui/button';
-import { API_BASE_URL } from '../config';
 import { Card } from './ui/card';
-import { API_BASE_URL } from '../config';
 import { Badge } from './ui/badge';
-import { API_BASE_URL } from '../config';
 import { Input } from './ui/input';
-import { API_BASE_URL } from '../config';
 import { Label } from './ui/label';
-import { API_BASE_URL } from '../config';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { API_BASE_URL } from '../config';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from './ui/dialog';
-import { API_BASE_URL } from '../config';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { API_BASE_URL } from '../config';
 import { toast } from 'sonner';
-import { API_BASE_URL } from '../config';
 import { exportToCSV, exportToPDF, prepareInventoryDataForExport } from '../utils/exportUtils';
-import { API_BASE_URL } from '../config';
 import { Loader } from 'lucide-react';
-import { API_BASE_URL } from '../config';
 
 interface InventoryItem {
   id: string;
@@ -97,6 +81,11 @@ export function InventoryManagement() {
     if (daysUntilExpiry < 0) return 'expired'; // Red
     if (daysUntilExpiry <= 7) return 'expiring'; // Yellow
     return 'good'; // Green
+  };
+
+  // Permission check: Admin, Vet, and Officer can manage inventory
+  const canManageInventory = () => {
+    return currentUser && ['admin', 'vet', 'officer'].includes(currentUser.role);
   };
 
   // Helper function to get color class based on expiry status
@@ -479,8 +468,8 @@ export function InventoryManagement() {
                   transition={{ delay: index * 0.05 }}
                 >
                   <Card className={`p-4 ${item.quantity < item.minThreshold
-                      ? 'border-2 border-red-400 bg-red-50'
-                      : getExpiryColorClass(getExpiryStatus(item.expiryDate))
+                    ? 'border-2 border-red-400 bg-red-50'
+                    : getExpiryColorClass(getExpiryStatus(item.expiryDate))
                     }`}>
                     <div className="flex gap-3">
                       <div className={`w-12 h-12 rounded-full flex items-center justify-center ${item.category === 'food' ? 'bg-green-100' : 'bg-blue-100'
