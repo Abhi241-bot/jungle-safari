@@ -1,27 +1,17 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { API_BASE_URL } from '../config';
 import axios from 'axios';
-import { API_BASE_URL } from '../config';
 import { AppContext } from '../App';
-import { API_BASE_URL } from '../config';
 import { translations } from './mockData';
-import { API_BASE_URL } from '../config';
-import { ArrowLeft, Calendar, Activity, Heart, TrendingUp, FileText } from 'lucide-react';
-import { API_BASE_URL } from '../config';
+import { ArrowLeft, Calendar, Activity, Heart, TrendingUp, FileText, Stethoscope } from 'lucide-react';
 import { motion } from 'motion/react';
-import { API_BASE_URL } from '../config';
 import { Button } from './ui/button';
-import { API_BASE_URL } from '../config';
 import { Card } from './ui/card';
-import { API_BASE_URL } from '../config';
 import { Badge } from './ui/badge';
-import { API_BASE_URL } from '../config';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { API_BASE_URL } from '../config';
 import { ImageWithFallback } from './figma/ImageWithFallback';
-import { API_BASE_URL } from '../config';
 import { Loader } from 'lucide-react';
-import { API_BASE_URL } from '../config';
+import { HospitalRecordsList } from './HospitalRecordsList';
 
 interface LogEntry {
   id: string;
@@ -81,7 +71,7 @@ export function AnimalProfile() {
       </div>
     );
   }
-  
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-amber-50 pb-8">
       {/* Header */}
@@ -156,9 +146,13 @@ export function AnimalProfile() {
 
         {/* Tabs */}
         <Tabs defaultValue="history" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-4">
+          <TabsList className="grid w-full grid-cols-3 mb-4">
             <TabsTrigger value="history">
               {language === 'en' ? 'History' : 'इतिहास'}
+            </TabsTrigger>
+            <TabsTrigger value="hospital">
+              <Stethoscope className="w-4 h-4 mr-1" />
+              {language === 'en' ? 'Hospital' : 'अस्पताल'}
             </TabsTrigger>
             <TabsTrigger value="info">
               {language === 'en' ? 'Info' : 'जानकारी'}
@@ -204,6 +198,17 @@ export function AnimalProfile() {
                   ))
                 )}
               </div>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="hospital">
+            <Card className="p-6 bg-white">
+              <HospitalRecordsList
+                animalId={selectedAnimal.id}
+                animalName={selectedAnimal.name}
+                language={language}
+                canEdit={true}
+              />
             </Card>
           </TabsContent>
 
