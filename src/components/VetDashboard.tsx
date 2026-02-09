@@ -3,7 +3,7 @@ import { API_BASE_URL } from '../config';
 import axios from 'axios';
 import { AppContext, Animal, Alert as AlertType, Observation } from '../App';
 import { translations } from './mockData';
-import { Bell, Menu, Stethoscope, FileText, Pill, Activity, Settings, AlertTriangle, Home, List, ClipboardList } from 'lucide-react';
+import { Bell, Menu, Stethoscope, FileText, Pill, Activity, Settings, AlertTriangle, Home, List, ClipboardList, MessageSquare } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
@@ -15,6 +15,8 @@ import { Loader } from 'lucide-react';
 import { toast } from 'sonner';
 import { ZookeeperLogsList } from './ZookeeperLogsList';
 import { ZookeeperLogsViewer } from './ZookeeperLogsViewer';
+import { HospitalRecordsList } from './HospitalRecordsList';
+import { MessagingInterface } from './MessagingInterface';
 
 export function VetDashboard() {
   const { currentUser, language, setCurrentScreen, setSelectedAnimal } = useContext(AppContext);
@@ -32,7 +34,7 @@ export function VetDashboard() {
   const [selectedZookeeperId, setSelectedZookeeperId] = useState<string | null>(null);
   const [selectedZookeeperName, setSelectedZookeeperName] = useState<string>('');
   const [isLogsViewerOpen, setIsLogsViewerOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'logs'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'logs' | 'messages'>('dashboard');
 
 
   useEffect(() => {
@@ -258,12 +260,22 @@ export function VetDashboard() {
             <ClipboardList className="w-4 h-4 mr-2" />
             {language === 'en' ? 'Zookeeper Logs' : 'चिड़ियाघर कर्मचारी लॉग'}
           </Button>
+          <Button
+            variant={activeTab === 'messages' ? 'default' : 'ghost'}
+            className={activeTab === 'messages' ? 'bg-white text-blue-600' : 'text-white hover:bg-white/20'}
+            onClick={() => setActiveTab('messages')}
+          >
+            <MessageSquare className="w-4 h-4 mr-2" />
+            {language === 'en' ? 'Messages' : 'संदेश'}
+          </Button>
         </div>
 
         <h1 className="text-white">
           {activeTab === 'dashboard'
             ? (language === 'en' ? 'Health Dashboard' : 'स्वास्थ्य डैशबोर्ड')
-            : (language === 'en' ? 'Zookeeper Logs' : 'चिड़ियाघर कर्मचारी लॉग')
+            : activeTab === 'logs'
+              ? (language === 'en' ? 'Zookeeper Logs' : 'चिड़ियाघर कर्मचारी लॉग')
+              : (language === 'en' ? 'Messages' : 'संदेश')
           }
         </h1>
       </div>
@@ -456,12 +468,12 @@ export function VetDashboard() {
               </TabsContent>
             </Tabs>
           </>
-        ) : (
+        ) : activeTab === 'logs' ? (
           // Logs View
           <>
             <ZookeeperLogsList
               language={language}
-              onZookeeperClick={(id, name) => {
+              onZookeeperClick={(id: string, name: string) => {
                 setSelectedZookeeperId(id);
                 setSelectedZookeeperName(name);
                 setIsLogsViewerOpen(true);
@@ -475,6 +487,12 @@ export function VetDashboard() {
               onClose={() => setIsLogsViewerOpen(false)}
             />
           </>
+        ) : (
+          // Messages View
+          <MessagingInterface
+            language={language}
+            currentUser={currentUser!}
+          />
         )}
       </div>
 

@@ -3,7 +3,7 @@ import { API_BASE_URL } from '../config';
 import axios from 'axios';
 import { AppContext, Animal, User, Alert as AlertType } from '../App';
 import { translations } from './mockData';
-import { Bell, Menu, Users, Dog, AlertTriangle, Plus, UserPlus, Settings, Package, ClipboardList, Pill, Home, List } from 'lucide-react';
+import { Bell, Menu, Users, Dog, AlertTriangle, Plus, UserPlus, Settings, Package, ClipboardList, Pill, Home, List, MessageSquare } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
@@ -18,6 +18,7 @@ import { ImageWithFallback } from './figma/ImageWithFallback';
 import { Loader } from 'lucide-react';
 import { ZookeeperLogsList } from './ZookeeperLogsList';
 import { ZookeeperLogsViewer } from './ZookeeperLogsViewer';
+import { MessagingInterface } from './MessagingInterface';
 
 export function AdminDashboard() {
   const { currentUser, language, setCurrentScreen, setSelectedAnimal } = useContext(AppContext);
@@ -35,7 +36,7 @@ export function AdminDashboard() {
   const [selectedZookeeperId, setSelectedZookeeperId] = useState<string | null>(null);
   const [selectedZookeeperName, setSelectedZookeeperName] = useState<string>('');
   const [isLogsViewerOpen, setIsLogsViewerOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'logs'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'logs' | 'messages'>('dashboard');
 
 
   // Form state for new animal
@@ -297,12 +298,22 @@ export function AdminDashboard() {
             <ClipboardList className="w-4 h-4 mr-2" />
             {language === 'en' ? 'Zookeeper Logs' : 'चिड़ियाघर कर्मचारी लॉग'}
           </Button>
+          <Button
+            variant={activeTab === 'messages' ? 'default' : 'ghost'}
+            className={activeTab === 'messages' ? 'bg-white text-amber-600' : 'text-white hover:bg-white/20'}
+            onClick={() => setActiveTab('messages')}
+          >
+            <MessageSquare className="w-4 h-4 mr-2" />
+            {language === 'en' ? 'Messages' : 'संदेश'}
+          </Button>
         </div>
 
         <h1 className="text-white">
           {activeTab === 'dashboard'
             ? (language === 'en' ? 'Dashboard Overview' : 'डैशबोर्ड अवलोकन')
-            : (language === 'en' ? 'Zookeeper Logs' : 'चिड़ियाघर कर्मचारी लॉग')
+            : activeTab === 'logs'
+              ? (language === 'en' ? 'Zookeeper Logs' : 'चिड़ियाघर कर्मचारी लॉग')
+              : (language === 'en' ? 'Messages' : 'संदेश')
           }
         </h1>
       </div>
@@ -565,7 +576,7 @@ export function AdminDashboard() {
               </Button>
             </Card>
           </>
-        ) : (
+        ) : activeTab === 'logs' ? (
           // Logs View
           <>
             <ZookeeperLogsList
@@ -584,6 +595,12 @@ export function AdminDashboard() {
               onClose={() => setIsLogsViewerOpen(false)}
             />
           </>
+        ) : (
+          // Messages View
+          <MessagingInterface
+            language={language}
+            currentUser={currentUser!}
+          />
         )}
       </div>
 
