@@ -1,31 +1,18 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { API_BASE_URL } from '../config';
 import axios from 'axios';
-import { API_BASE_URL } from '../config';
 import { AppContext, Animal } from '../App';
-import { API_BASE_URL } from '../config';
 import { translations } from './mockData';
-import { API_BASE_URL } from '../config';
 import { ArrowLeft, Calendar as CalendarIcon, ChevronLeft, ChevronRight, FileText, Mic, Image as ImageIcon, Clock, Filter, X } from 'lucide-react';
-import { API_BASE_URL } from '../config';
 import { Button } from './ui/button';
-import { API_BASE_URL } from '../config';
 import { Card } from './ui/card';
-import { API_BASE_URL } from '../config';
 import { Calendar } from './ui/calendar';
-import { API_BASE_URL } from '../config';
 import { Badge } from './ui/badge';
-import { API_BASE_URL } from '../config';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { API_BASE_URL } from '../config';
 import { motion } from 'motion/react';
-import { API_BASE_URL } from '../config';
 import { ImageWithFallback } from './figma/ImageWithFallback';
-import { API_BASE_URL } from '../config';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { API_BASE_URL } from '../config';
 import { Loader } from 'lucide-react';
-import { API_BASE_URL } from '../config';
 
 interface LogEntry {
   id: string;
@@ -42,8 +29,11 @@ interface LogEntry {
   videoUrl?: string;
   gateImageUrl?: string; // Gate lock image
   observationText?: string; // Audio/text observation
+  transcribedText?: string; // Raw transcribed text
+  fullObservationText?: string; // Prefix + transcribed text
 
   // AI-extracted fields
+  date_or_day?: string;
   incharge_signature?: string;
   daily_animal_health_monitoring?: string;
   other_animal_requirements?: string;
@@ -468,66 +458,138 @@ function LogCard({
               )}
             </div>
 
-            {/* Notes Preview */}
-            {hasNotes && !hasImages && !hasRecording && (
-              <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">
-                {log.observationText || log.generalObservationText || log.injuriesText}
-              </p>
+            {/* Notes Preview - Always show if exists */}
+            {(log.observationText || log.generalObservationText || log.injuriesText || log.transcribedText || log.fullObservationText) && (
+              <div className="mt-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                <p className="text-sm font-semibold text-blue-800 dark:text-blue-200 mb-1">
+                  {language === 'en' ? 'Observation:' : 'अवलोकन:'}
+                </p>
+                <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+                  {log.fullObservationText || log.transcribedText || log.observationText || log.generalObservationText || log.injuriesText}
+                </p>
+              </div>
             )}
 
-            {/* AI Summary Fields */}
-            {(log.incharge_signature || log.daily_animal_health_monitoring || log.other_animal_requirements || log.medicine_stock_register) && (
-              <div className="mt-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg space-y-2 text-sm">
-                {log.incharge_signature && (
-                  <div className="flex items-start gap-2">
-                    <span className="font-semibold text-green-800 dark:text-green-200 min-w-[100px]">
-                      {language === 'en' ? 'Signature:' : 'हस्ताक्षर:'}
+            {/* AI Summary Fields - Always show if any field exists */}
+            <div className="mt-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg space-y-2 text-sm">
+              {log.date_or_day && (
+                <div className="flex items-start gap-2">
+                  <span className="font-semibold text-green-800 dark:text-green-200 min-w-[120px]">
+                    {language === 'en' ? 'Date:' : 'तिथि:'}
+                  </span>
+                  <span className="text-gray-700 dark:text-gray-300">{log.date_or_day}</span>
+                </div>
+              )}
+              {log.incharge_signature && (
+                <div className="flex items-start gap-2">
+                  <span className="font-semibold text-green-800 dark:text-green-200 min-w-[120px]">
+                    {language === 'en' ? 'Signature:' : 'हस्ताक्षर:'}
+                  </span>
+                  <span className="text-gray-700 dark:text-gray-300">{log.incharge_signature}</span>
+                </div>
+              )}
+              {log.daily_animal_health_monitoring && (
+                <div className="flex items-start gap-2">
+                  <span className="font-semibold text-green-800 dark:text-green-200 min-w-[120px]">
+                    {language === 'en' ? 'Health:' : 'स्वास्थ्य:'}
+                  </span>
+                  <span className="text-gray-700 dark:text-gray-300">{log.daily_animal_health_monitoring}</span>
+                </div>
+              )}
+              {log.other_animal_requirements && (
+                <div className="flex items-start gap-2">
+                  <span className="font-semibold text-green-800 dark:text-green-200 min-w-[120px]">
+                    {language === 'en' ? 'Requirements:' : 'आवश्यकताएं:'}
+                  </span>
+                  <span className="text-gray-700 dark:text-gray-300">{log.other_animal_requirements}</span>
+                </div>
+              )}
+              {log.medicine_stock_register && (
+                <div className="flex items-start gap-2">
+                  <span className="font-semibold text-green-800 dark:text-green-200 min-w-[120px]">
+                    {language === 'en' ? 'Medicine:' : 'दवा:'}
+                  </span>
+                  <span className="text-gray-700 dark:text-gray-300">{log.medicine_stock_register}</span>
+                </div>
+              )}
+              {log.carnivorous_animal_feeding_chart && (
+                <div className="flex items-start gap-2">
+                  <span className="font-semibold text-green-800 dark:text-green-200 min-w-[120px]">
+                    {language === 'en' ? 'Feeding:' : 'भोजन:'}
+                  </span>
+                  <span className="text-gray-700 dark:text-gray-300">{log.carnivorous_animal_feeding_chart}</span>
+                </div>
+              )}
+              {log.daily_wildlife_monitoring && (
+                <div className="flex items-start gap-2">
+                  <span className="font-semibold text-green-800 dark:text-green-200 min-w-[120px]">
+                    {language === 'en' ? 'Monitoring:' : 'निगरानी:'}
+                  </span>
+                  <span className="text-gray-700 dark:text-gray-300">{log.daily_wildlife_monitoring}</span>
+                </div>
+              )}
+              {log.normal_behaviour_details && (
+                <div className="flex items-start gap-2">
+                  <span className="font-semibold text-green-800 dark:text-green-200 min-w-[120px]">
+                    {language === 'en' ? 'Behaviour:' : 'व्यवहार:'}
+                  </span>
+                  <span className="text-gray-700 dark:text-gray-300">{log.normal_behaviour_details}</span>
+                </div>
+              )}
+
+              {/* Boolean fields */}
+              <div className="grid grid-cols-2 gap-2 mt-2">
+                {typeof log.animal_observed_on_time === 'boolean' && (
+                  <div className="flex items-center gap-2">
+                    <span className={`w-3 h-3 rounded-full ${log.animal_observed_on_time ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                    <span className="text-xs text-gray-600 dark:text-gray-400">
+                      {language === 'en' ? 'Observed on time' : 'समय पर देखा'}
                     </span>
-                    <span className="text-gray-700 dark:text-gray-300">{log.incharge_signature}</span>
                   </div>
                 )}
-                {log.daily_animal_health_monitoring && (
-                  <div className="flex items-start gap-2">
-                    <span className="font-semibold text-green-800 dark:text-green-200 min-w-[100px]">
-                      {language === 'en' ? 'Health:' : 'स्वास्थ्य:'}
+                {typeof log.clean_drinking_water_provided === 'boolean' && (
+                  <div className="flex items-center gap-2">
+                    <span className={`w-3 h-3 rounded-full ${log.clean_drinking_water_provided ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                    <span className="text-xs text-gray-600 dark:text-gray-400">
+                      {language === 'en' ? 'Clean water' : 'साफ पानी'}
                     </span>
-                    <span className="text-gray-700 dark:text-gray-300 line-clamp-2">{log.daily_animal_health_monitoring}</span>
                   </div>
                 )}
-                {log.other_animal_requirements && (
-                  <div className="flex items-start gap-2">
-                    <span className="font-semibold text-green-800 dark:text-green-200 min-w-[100px]">
-                      {language === 'en' ? 'Requirements:' : 'आवश्यकताएं:'}
+                {typeof log.enclosure_cleaned_properly === 'boolean' && (
+                  <div className="flex items-center gap-2">
+                    <span className={`w-3 h-3 rounded-full ${log.enclosure_cleaned_properly ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                    <span className="text-xs text-gray-600 dark:text-gray-400">
+                      {language === 'en' ? 'Enclosure clean' : 'बाड़ा साफ'}
                     </span>
-                    <span className="text-gray-700 dark:text-gray-300 line-clamp-2">{log.other_animal_requirements}</span>
                   </div>
                 )}
-                {log.medicine_stock_register && (
-                  <div className="flex items-start gap-2">
-                    <span className="font-semibold text-green-800 dark:text-green-200 min-w-[100px]">
-                      {language === 'en' ? 'Medicine:' : 'दवा:'}
+                {typeof log.normal_behaviour_status === 'boolean' && (
+                  <div className="flex items-center gap-2">
+                    <span className={`w-3 h-3 rounded-full ${log.normal_behaviour_status ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                    <span className="text-xs text-gray-600 dark:text-gray-400">
+                      {language === 'en' ? 'Normal behaviour' : 'सामान्य व्यवहार'}
                     </span>
-                    <span className="text-gray-700 dark:text-gray-300 line-clamp-2">{log.medicine_stock_register}</span>
                   </div>
                 )}
-                {log.carnivorous_animal_feeding_chart && (
-                  <div className="flex items-start gap-2">
-                    <span className="font-semibold text-green-800 dark:text-green-200 min-w-[100px]">
-                      {language === 'en' ? 'Feeding:' : 'भोजन:'}
+                {typeof log.feed_and_supplements_available === 'boolean' && (
+                  <div className="flex items-center gap-2">
+                    <span className={`w-3 h-3 rounded-full ${log.feed_and_supplements_available ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                    <span className="text-xs text-gray-600 dark:text-gray-400">
+                      {language === 'en' ? 'Feed available' : 'भोजन उपलब्ध'}
                     </span>
-                    <span className="text-gray-700 dark:text-gray-300 line-clamp-2">{log.carnivorous_animal_feeding_chart}</span>
                   </div>
                 )}
-                {log.daily_wildlife_monitoring && (
-                  <div className="flex items-start gap-2">
-                    <span className="font-semibold text-green-800 dark:text-green-200 min-w-[100px]">
-                      {language === 'en' ? 'Monitoring:' : 'निगरानी:'}
+                {typeof log.feed_given_as_prescribed === 'boolean' && (
+                  <div className="flex items-center gap-2">
+                    <span className={`w-3 h-3 rounded-full ${log.feed_given_as_prescribed ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                    <span className="text-xs text-gray-600 dark:text-gray-400">
+                      {language === 'en' ? 'Fed as prescribed' : 'निर्धारित अनुसार खिलाया'}
                     </span>
-                    <span className="text-gray-700 dark:text-gray-300 line-clamp-2">{log.daily_wildlife_monitoring}</span>
                   </div>
                 )}
               </div>
-            )}
+            </div>
+
 
             {/* Image Preview */}
             {hasImages && (
