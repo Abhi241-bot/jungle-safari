@@ -659,6 +659,246 @@ def process_audio_observation():
         print(f"❌ Error processing audio observation: {e}")
         return jsonify({"error": str(e)}), 500
 
+# ==================== MESSAGES API (Task 4: Communication System) ====================
+
+@app.route('/messages', methods=['POST'])
+def create_message():
+    """Create a new message"""
+    if not db:
+        return jsonify({"error": "Database not connected"}), 500
+    
+    data = request.get_json()
+    if not data or 'content' not in data:
+        return jsonify({"error": "Missing required message data"}), 400
+    
+    try:
+        from datetime import datetime
+        
+        message_data = {
+            'senderId': data.get('senderId'),
+            'senderName': data.get('senderName'),
+            'senderRole': data.get('senderRole'),
+            'recipientType': data.get('recipientType', 'everyone'),
+            'recipientId': data.get('recipientId'),
+            'recipientRole': data.get('recipientRole'),
+            'content': data.get('content'),
+            'type': data.get('type', 'message'),
+            'priority': data.get('priority', 'normal'),
+            'createdAt': datetime.now().isoformat(),
+            'readBy': []
+        }
+        
+        # Add to Firestore
+        doc_ref = db.collection('messages').add(message_data)
+        message_data['id'] = doc_ref[1].id
+        
+        print(f"✅ Message created with ID: {message_data['id']}")
+        return jsonify({"success": True, "message": message_data}), 201
+    except Exception as e:
+        print(f"❌ Error creating message: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/messages', methods=['GET'])
+def get_messages():
+    """Get messages for current user"""
+    if not db:
+        return jsonify({"error": "Database not connected"}), 500
+    
+    try:
+        user_id = request.args.get('userId')
+        user_role = request.args.get('role')
+        
+        messages_ref = db.collection('messages')
+        docs = messages_ref.stream()
+        
+        all_messages = []
+        for doc in docs:
+            msg = doc.to_dict()
+            msg['id'] = doc.id
+            
+            # Filter based on recipient
+            if (msg.get('recipientType') == 'everyone' or
+                (msg.get('recipientType') == 'individual' and msg.get('recipientId') == user_id) or
+                (msg.get('recipientType') == 'role' and msg.get('recipientRole') == user_role)):
+                all_messages.append(msg)
+        
+        # Sort by creation date (newest first)
+        all_messages.sort(key=lambda x: x.get('createdAt', ''), reverse=True)
+        
+        return jsonify({"messages": all_messages}), 200
+    except Exception as e:
+        print(f"❌ Error fetching messages: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/messages/<message_id>/read', methods=['PUT'])
+def mark_message_read(message_id):
+    """Mark a message as read"""
+    if not db:
+        return jsonify({"error": "Database not connected"}), 500
+    
+    data = request.get_json()
+    user_id = data.get('userId')
+    
+    if not user_id:
+        return jsonify({"error": "Missing userId"}), 400
+    
+    try:
+        msg_ref = db.collection('messages').document(message_id)
+        msg_doc = msg_ref.get()
+        
+        if not msg_doc.exists:
+            return jsonify({"error": "Message not found"}), 404
+        
+        msg_data = msg_doc.to_dict()
+        read_by = msg_data.get('readBy', [])
+        
+        if user_id not in read_by:
+            read_by.append(user_id)
+            msg_ref.update({'readBy': read_by})
+        
+        return jsonify({"success": True, "message": "Message marked as read"}), 200
+    except Exception as e:
+        print(f"❌ Error marking message as read: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/messages/<message_id>', methods=['DELETE'])
+def delete_message(message_id):
+    """Delete a message (Admin only)"""
+    if not db:
+        return jsonify({"error": "Database not connected"}), 500
+    
+    try:
+        db.collection('messages').document(message_id).delete()
+        return jsonify({"success": True, "message": "Message deleted"}), 200
+    except Exception as e:
+        print(f"❌ Error deleting message: {e}")
+        return jsonify({"error": str(e)}), 500
+
+# ==================== HOSPITAL RECORDS API (Task 9: Hospital Records) ====================
+
+@app.route('/hospital-records', methods=['POST'])
+def create_hospital_record():
+    """Create a new hospital record"""
+    if not db:
+        return jsonify({"error": "Database not connected"}), 500
+    
+    data = request.get_json()
+    if not data or 'animalId' not in data or 'observation' not in data:
+        return jsonify({"error": "Missing required fields: animalId and observation"}), 400
+    
+    try:
+        from datetime import datetime
+        
+        record_data = {
+            'animalId': data.get('animalId'),
+            'date': data.get('date'),
+            'observation': data.get('observation'),
+            'testsConducted': data.get('testsConducted', ''),
+            'dosageTreatment': data.get('dosageTreatment', ''),
+            'remarks': data.get('remarks', ''),
+            'status': data.get('status', 'ongoing'),
+            'vetId': data.get('vetId'),
+            'vetName': data.get('vetName'),
+            'createdAt': datetime.now().isoformat(),
+            'updatedAt': datetime.now().isoformat()
+        }
+        
+        # Add to Firestore
+        doc_ref = db.collection('hospital_records').add(record_data)
+        record_data['id'] = doc_ref[1].id
+        
+        print(f"✅ Hospital record created with ID: {record_data['id']}")
+        return jsonify({"success": True, "record": record_data}), 201
+    except Exception as e:
+        print(f"❌ Error creating hospital record: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/hospital-records', methods=['GET'])
+def get_hospital_records():
+    """Get hospital records for an animal"""
+    if not db:
+        return jsonify({"error": "Database not connected"}), 500
+    
+    try:
+        animal_id = request.args.get('animalId')
+        
+        if not animal_id:
+            return jsonify({"error": "Missing animalId parameter"}), 400
+        
+        records_ref = db.collection('hospital_records').where('animalId', '==', animal_id)
+        docs = records_ref.stream()
+        
+        records = []
+        for doc in docs:
+            record = doc.to_dict()
+            record['id'] = doc.id
+            records.append(record)
+        
+        # Sort by date (newest first)
+        records.sort(key=lambda x: x.get('date', ''), reverse=True)
+        
+        return jsonify({"records": records}), 200
+    except Exception as e:
+        print(f"❌ Error fetching hospital records: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/hospital-records/<record_id>', methods=['PUT'])
+def update_hospital_record(record_id):
+    """Update a hospital record"""
+    if not db:
+        return jsonify({"error": "Database not connected"}), 500
+    
+    data = request.get_json()
+    
+    try:
+        from datetime import datetime
+        
+        record_ref = db.collection('hospital_records').document(record_id)
+        record_doc = record_ref.get()
+        
+        if not record_doc.exists:
+            return jsonify({"error": "Record not found"}), 404
+        
+        update_data = {}
+        if 'observation' in data:
+            update_data['observation'] = data['observation']
+        if 'testsConducted' in data:
+            update_data['testsConducted'] = data['testsConducted']
+        if 'dosageTreatment' in data:
+            update_data['dosageTreatment'] = data['dosageTreatment']
+        if 'remarks' in data:
+            update_data['remarks'] = data['remarks']
+        if 'status' in data:
+            update_data['status'] = data['status']
+        
+        update_data['updatedAt'] = datetime.now().isoformat()
+        
+        record_ref.update(update_data)
+        
+        # Get updated record
+        updated_doc = record_ref.get()
+        updated_record = updated_doc.to_dict()
+        updated_record['id'] = record_id
+        
+        return jsonify({"success": True, "record": updated_record}), 200
+    except Exception as e:
+        print(f"❌ Error updating hospital record: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/hospital-records/<record_id>', methods=['DELETE'])
+def delete_hospital_record(record_id):
+    """Delete a hospital record"""
+    if not db:
+        return jsonify({"error": "Database not connected"}), 500
+    
+    try:
+        db.collection('hospital_records').document(record_id).delete()
+        return jsonify({"success": True, "message": "Record deleted"}), 200
+    except Exception as e:
+        print(f"❌ Error deleting hospital record: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
 if __name__ == '__main__':
     # --- API Key Configuration ---
     # IMPORTANT: Set your API keys as environment variables for security.
