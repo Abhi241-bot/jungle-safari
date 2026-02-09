@@ -1,37 +1,23 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { API_BASE_URL } from '../config';
 import axios from 'axios';
-import { API_BASE_URL } from '../config';
 import { AppContext, Animal, User, Alert as AlertType } from '../App';
-import { API_BASE_URL } from '../config';
 import { translations } from './mockData';
-import { API_BASE_URL } from '../config';
 import { Bell, Menu, Users, Dog, AlertTriangle, Plus, UserPlus, Settings, Package, ClipboardList, Pill, Home, List } from 'lucide-react';
-import { API_BASE_URL } from '../config';
 import { motion } from 'motion/react';
-import { API_BASE_URL } from '../config';
 import { Button } from './ui/button';
-import { API_BASE_URL } from '../config';
 import { Card } from './ui/card';
-import { API_BASE_URL } from '../config';
 import { Badge } from './ui/badge';
-import { API_BASE_URL } from '../config';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from './ui/dialog';
-import { API_BASE_URL } from '../config';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription } from './ui/sheet';
-import { API_BASE_URL } from '../config';
 import { Input } from './ui/input';
-import { API_BASE_URL } from '../config';
 import { Label } from './ui/label';
-import { API_BASE_URL } from '../config';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { API_BASE_URL } from '../config';
 import { toast } from 'sonner';
-import { API_BASE_URL } from '../config';
 import { ImageWithFallback } from './figma/ImageWithFallback';
-import { API_BASE_URL } from '../config';
 import { Loader } from 'lucide-react';
-import { API_BASE_URL } from '../config';
+import { ZookeeperLogsList } from './ZookeeperLogsList';
+import { ZookeeperLogsViewer } from './ZookeeperLogsViewer';
 
 export function AdminDashboard() {
   const { currentUser, language, setCurrentScreen, setSelectedAnimal } = useContext(AppContext);
@@ -44,7 +30,13 @@ export function AdminDashboard() {
   const [isAnimalDialogOpen, setIsAnimalDialogOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAllAnimalsOpen, setIsAllAnimalsOpen] = useState(false);
-  
+
+  // Zookeeper Logs State
+  const [selectedZookeeperId, setSelectedZookeeperId] = useState<string | null>(null);
+  const [selectedZookeeperName, setSelectedZookeeperName] = useState<string>('');
+  const [isLogsViewerOpen, setIsLogsViewerOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'logs'>('dashboard');
+
 
   // Form state for new animal
   const [newAnimalName, setNewAnimalName] = useState('');
@@ -128,14 +120,14 @@ export function AdminDashboard() {
       enclosure: newAnimalEnclosure,
       image: 'https://images.unsplash.com/photo-1564349683136-77e08dba1ef7?w=400', // Default image
       health: newAnimalHealth,
-      assignedTo: newAnimalAssignedTo, 
+      assignedTo: newAnimalAssignedTo,
     };
 
     try {
       const response = await axios.post(`${API_BASE_URL}/animals`, newAnimalPayload);
       setAnimals([response.data, ...animals]);
       toast.success(language === 'en' ? 'Animal added successfully!' : 'जानवर सफलतापूर्वक जोड़ा गया!');
-      
+
       // Reset form
       setNewAnimalName('');
       setNewAnimalSpecies('');
@@ -345,102 +337,102 @@ export function AdminDashboard() {
             </Button>
           </div>
 
-        {/* Add Animal Dialog - now separate */}
-        <Dialog open={isAnimalDialogOpen} onOpenChange={setIsAnimalDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="w-full h-14 mt-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 shadow-lg">
-              <Plus className="w-5 h-5 mr-2" />
-              {t.addAnimal}
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>
-                {language === 'en' ? 'Add New Animal' : 'नया जानवर जोड़ें'}
-              </DialogTitle>
-              <DialogDescription>
-                {language === 'en' ? 'Enter the details of the new animal to add to the zoo.' : 'चिड़ियाघर में जोड़ने के लिए नए जानवर का विवरण दर्ज करें।'}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div>
-                <Label>{language === 'en' ? 'Animal Name' : 'जानवर का नाम'}</Label>
-                <Input 
-                  placeholder={language === 'en' ? 'Enter animal name' : 'जानवर का नाम दर्ज करें'} 
-                  value={newAnimalName}
-                  onChange={(e) => setNewAnimalName(e.target.value)}
-                />
-              </div>
-              <div>
-                <Label>{language === 'en' ? 'Species' : 'प्रजाति'}</Label>
-                <Select value={newAnimalSpecies} onValueChange={setNewAnimalSpecies}>
-                  <SelectTrigger>
-                    <SelectValue placeholder={language === 'en' ? 'Select species' : 'प्रजाति चुनें'} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Lion">{language === 'en' ? 'Lion' : 'शेर'}</SelectItem>
-                    <SelectItem value="Tiger">{language === 'en' ? 'Tiger' : 'बाघ'}</SelectItem>
-                    <SelectItem value="Elephant">{language === 'en' ? 'Elephant' : 'हाथी'}</SelectItem>
-                    <SelectItem value="Giraffe">{language === 'en' ? 'Giraffe' : 'जिराफ़'}</SelectItem>
-                    <SelectItem value="Zebra">{language === 'en' ? 'Zebra' : 'ज़ेब्रा'}</SelectItem>
-                    <SelectItem value="Monkey">{language === 'en' ? 'Monkey' : 'बंदर'}</SelectItem>
-                    <SelectItem value="Bear">{language === 'en' ? 'Bear' : 'भालू'}</SelectItem>
-                    <SelectItem value="Deer">{language === 'en' ? 'Deer' : 'हिरण'}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>{language === 'en' ? 'Age' : 'उम्र'}</Label>
-                <Input 
-                  placeholder={language === 'en' ? 'e.g., 5 years' : 'जैसे, 5 साल'} 
-                  value={newAnimalAge}
-                  onChange={(e) => setNewAnimalAge(e.target.value)}
-                />
-              </div>
-              <div>
-                <Label>{language === 'en' ? 'Enclosure' : 'बाड़ा'}</Label>
-                <Input 
-                  placeholder={language === 'en' ? 'e.g., A-12' : 'जैसे, A-12'} 
-                  value={newAnimalEnclosure}
-                  onChange={(e) => setNewAnimalEnclosure(e.target.value)}
-                />
-              </div>
-              <div>
-                <Label>{language === 'en' ? 'Initial Health' : 'प्रारंभिक स्वास्थ्य'}</Label>
-                <Select value={newAnimalHealth} onValueChange={(v) => setNewAnimalHealth(v as any)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="excellent">{t.excellent}</SelectItem>
-                    <SelectItem value="good">{t.good}</SelectItem>
-                    <SelectItem value="fair">{t.fair}</SelectItem>
-                    <SelectItem value="poor">{t.poor}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>{language === 'en' ? 'Assign To' : 'को सौंपें'}</Label>
-                <Select value={newAnimalAssignedTo} onValueChange={setNewAnimalAssignedTo}>
-                  <SelectTrigger>
-                    <SelectValue placeholder={language === 'en' ? 'Select zookeeper' : 'चिड़ियाघर कीपर चुनें'} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {users.filter(u => u.role === 'zookeeper').map((keeper) => (
-                      <SelectItem key={keeper.id} value={keeper.name}>{keeper.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <Button 
-                className="w-full bg-green-600 hover:bg-green-700"
-                onClick={handleCreateAnimal}
-              >
-                {language === 'en' ? 'Add Animal' : 'जानवर जोड़ें'}
+          {/* Add Animal Dialog - now separate */}
+          <Dialog open={isAnimalDialogOpen} onOpenChange={setIsAnimalDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="w-full h-14 mt-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 shadow-lg">
+                <Plus className="w-5 h-5 mr-2" />
+                {t.addAnimal}
               </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+            </DialogTrigger>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>
+                  {language === 'en' ? 'Add New Animal' : 'नया जानवर जोड़ें'}
+                </DialogTitle>
+                <DialogDescription>
+                  {language === 'en' ? 'Enter the details of the new animal to add to the zoo.' : 'चिड़ियाघर में जोड़ने के लिए नए जानवर का विवरण दर्ज करें।'}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div>
+                  <Label>{language === 'en' ? 'Animal Name' : 'जानवर का नाम'}</Label>
+                  <Input
+                    placeholder={language === 'en' ? 'Enter animal name' : 'जानवर का नाम दर्ज करें'}
+                    value={newAnimalName}
+                    onChange={(e) => setNewAnimalName(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label>{language === 'en' ? 'Species' : 'प्रजाति'}</Label>
+                  <Select value={newAnimalSpecies} onValueChange={setNewAnimalSpecies}>
+                    <SelectTrigger>
+                      <SelectValue placeholder={language === 'en' ? 'Select species' : 'प्रजाति चुनें'} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Lion">{language === 'en' ? 'Lion' : 'शेर'}</SelectItem>
+                      <SelectItem value="Tiger">{language === 'en' ? 'Tiger' : 'बाघ'}</SelectItem>
+                      <SelectItem value="Elephant">{language === 'en' ? 'Elephant' : 'हाथी'}</SelectItem>
+                      <SelectItem value="Giraffe">{language === 'en' ? 'Giraffe' : 'जिराफ़'}</SelectItem>
+                      <SelectItem value="Zebra">{language === 'en' ? 'Zebra' : 'ज़ेब्रा'}</SelectItem>
+                      <SelectItem value="Monkey">{language === 'en' ? 'Monkey' : 'बंदर'}</SelectItem>
+                      <SelectItem value="Bear">{language === 'en' ? 'Bear' : 'भालू'}</SelectItem>
+                      <SelectItem value="Deer">{language === 'en' ? 'Deer' : 'हिरण'}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>{language === 'en' ? 'Age' : 'उम्र'}</Label>
+                  <Input
+                    placeholder={language === 'en' ? 'e.g., 5 years' : 'जैसे, 5 साल'}
+                    value={newAnimalAge}
+                    onChange={(e) => setNewAnimalAge(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label>{language === 'en' ? 'Enclosure' : 'बाड़ा'}</Label>
+                  <Input
+                    placeholder={language === 'en' ? 'e.g., A-12' : 'जैसे, A-12'}
+                    value={newAnimalEnclosure}
+                    onChange={(e) => setNewAnimalEnclosure(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label>{language === 'en' ? 'Initial Health' : 'प्रारंभिक स्वास्थ्य'}</Label>
+                  <Select value={newAnimalHealth} onValueChange={(v) => setNewAnimalHealth(v as any)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="excellent">{t.excellent}</SelectItem>
+                      <SelectItem value="good">{t.good}</SelectItem>
+                      <SelectItem value="fair">{t.fair}</SelectItem>
+                      <SelectItem value="poor">{t.poor}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>{language === 'en' ? 'Assign To' : 'को सौंपें'}</Label>
+                  <Select value={newAnimalAssignedTo} onValueChange={setNewAnimalAssignedTo}>
+                    <SelectTrigger>
+                      <SelectValue placeholder={language === 'en' ? 'Select zookeeper' : 'चिड़ियाघर कीपर चुनें'} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {users.filter(u => u.role === 'zookeeper').map((keeper) => (
+                        <SelectItem key={keeper.id} value={keeper.name}>{keeper.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button
+                  className="w-full bg-green-600 hover:bg-green-700"
+                  onClick={handleCreateAnimal}
+                >
+                  {language === 'en' ? 'Add Animal' : 'जानवर जोड़ें'}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </Card>
 
         {/* Active Alerts */}
@@ -601,10 +593,10 @@ export function AdminDashboard() {
                             animal.health === 'excellent'
                               ? 'bg-green-500 text-white'
                               : animal.health === 'good'
-                              ? 'bg-blue-500 text-white'
-                              : animal.health === 'fair'
-                              ? 'bg-yellow-500 text-white'
-                              : 'bg-red-500 text-white'
+                                ? 'bg-blue-500 text-white'
+                                : animal.health === 'fair'
+                                  ? 'bg-yellow-500 text-white'
+                                  : 'bg-red-500 text-white'
                           }
                         >
                           {animal.health === 'excellent'
@@ -612,16 +604,16 @@ export function AdminDashboard() {
                               ? 'Excellent'
                               : 'उत्कृष्ट'
                             : animal.health === 'good'
-                            ? language === 'en'
-                              ? 'Good'
-                              : 'अच्छा'
-                            : animal.health === 'fair'
-                            ? language === 'en'
-                              ? 'Fair'
-                              : 'ठीक'
-                            : language === 'en'
-                            ? 'Poor'
-                            : 'खराब'}
+                              ? language === 'en'
+                                ? 'Good'
+                                : 'अच्छा'
+                              : animal.health === 'fair'
+                                ? language === 'en'
+                                  ? 'Fair'
+                                  : 'ठीक'
+                                : language === 'en'
+                                  ? 'Poor'
+                                  : 'खराब'}
                         </Badge>
                       </div>
                     </div>
