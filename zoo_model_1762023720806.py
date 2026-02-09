@@ -115,40 +115,81 @@ class ZooAIModel:
     # Deepgram Transcription
     # ----------------------------
     def transcribe_audio(self, audio_bytes, content_type="audio/webm"):
-        """Transcribe audio using Deepgram API."""
-        if not self.deepgram_key:
-            print("❌ Deepgram API key missing")
-            return "Audio transcription unavailable - Deepgram API key missing"
+        """Transcribe audio using Deepgram API with Groq Whisper fallback."""
+        transcript = ""
         
-        try:
-            print(f"🎤 Transcribing audio: {len(audio_bytes)} bytes, type: {content_type}")
-            headers = {
-                "Authorization": f"Token {self.deepgram_key}",
-                "Content-Type": content_type
-            }
-            params = {
-                "model": "nova-2",
-                "language": "hi",  # Hindi language
-                "detect_language": "true",  # Auto-detect Hindi/English
-            }
-            response = requests.post(
-                self.deepgram_url, headers=headers, params=params, data=audio_bytes, timeout=60
-            )
-            
-            print(f"📡 Deepgram response status: {response.status_code}")
-            response.raise_for_status()
-            
-            result = response.json()
-            print(f"📄 Deepgram full response: {result}")
-            
-            transcript = result.get("results", {}).get("channels", [{}])[0].get("alternatives", [{}])[0].get("transcript", "")
-            print(f"✅ Transcript: '{transcript}'")
-            
-            return transcript or "No text returned by Deepgram"
+        # Try Deepgram first
+        if self.deepgram_key:
+            try:
+                print(f"🎤 Trying Deepgram transcription: {len(audio_bytes)} bytes, type: {content_type}")
+                headers = {
+                    "Authorization": f"Token {self.deepgram_key}",
+                    "Content-Type": content_type
+                }
+                params = {
+                    "model": "nova-2",
+                    "language": "hi",  # Hindi language
+                    "detect_language": "true",  # Auto-detect Hindi/English
+                }
+                response = requests.post(
+                    self.deepgram_url, headers=headers, params=params, data=audio_bytes, timeout=60
+                )
+                
+                print(f"📡 Deepgram response status: {response.status_code}")
+                
+                if response.status_code == 200:
+                    result = response.json()
+                    print(f"📄 Deepgram full response: {result}")
+                    
+                    transcript = result.get("results", {}).get("channels", [{}])[0].get("alternatives", [{}])[0].get("transcript", "")
+                    
+                    if transcript:
+                        print(f"✅ Deepgram transcript: '{transcript}'")
+                        return transcript
+                    else:
+                        print("⚠️ Deepgram returned empty transcript (audio may be silent or too short)")
+                else:
+                    print(f"⚠️ Deepgram failed with status {response.status_code}")
+            except Exception as e:
+                print(f"⚠️ Deepgram error: {e}")
+        
+        # Try Groq Whisper as fallback
+        groq_key = os.environ.get("GROQ_API_KEY")
+        if groq_key and not transcript:
+            try:
+                print("🔄 Trying Groq Whisper as fallback...")
+                from groq import Groq
+                import io
+                
+                client = Groq(api_key=groq_key)
+                
+                # Convert bytes to file-like object
+                audio_file = io.BytesIO(audio_bytes)
+                audio_file.name = "audio.webm"
+                
+                transcription = client.audio.transcriptions.create(
+                    file=("audio.webm", audio_file, content_type),
+                    model="whisper-large-v3",
+                    language="hi",  # Hindi
+                    response_format="text"
+                )
+                
+                transcript = transcription if isinstance(transcription, str) else str(transcription)
+                
+                if transcript:
+                    print(f"✅ Groq Whisper transcript: '{transcript}'")
+                    return transcript
+                else:
+                    print("⚠️ Groq also returned empty transcript")
+            except Exception as e:
+                print(f"⚠️ Groq Whisper error: {e}")
+        
+        # If both failed or returned empty
+        if not transcript:
+            return "No speech detected in audio. Please ensure microphone is working and speak clearly."
+        
+        return transcript
 
-        except Exception as e:
-            print(f"❌ Error transcribing audio: {e}")
-            return f"Error in audio transcription: {str(e)}"
 
     # ----------------------------
     # AI Processing with Gemini (Service Account)

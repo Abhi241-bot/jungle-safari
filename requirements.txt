@@ -9,5 +9,6 @@ requests==2.31.0
 pydantic==2.10.6
 langchain==0.3.17
 deepgram-sdk==3.0.0
+groq==0.4.1
 gunicorn==21.2.0
 packaging
