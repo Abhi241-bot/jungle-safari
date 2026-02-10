@@ -3,7 +3,7 @@ import { API_BASE_URL } from '../config';
 import axios from 'axios';
 import { AppContext, Animal, Alert as AlertType } from '../App';
 import { translations } from './mockData';
-import { AlertCircle, Bell, Plus, Search, Menu, AlertTriangle, Calendar, History, Home, List, Settings, ClipboardList } from 'lucide-react';
+import { AlertCircle, Bell, Plus, Search, Menu, AlertTriangle, Calendar, History, Home, List, Settings, ClipboardList, MessageSquare } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
@@ -16,6 +16,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTr
 import { Loader } from 'lucide-react';
 import { toast } from 'sonner';
 import { SubmissionStatus } from './SubmissionStatus';
+import { MessagingInterface } from './MessagingInterface';
 
 interface LogSchedule {
   morningSubmitted: boolean;
@@ -35,6 +36,7 @@ export function ZookeeperDashboard({ schedule }: ZookeeperDashboardProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isAllAnimalsOpen, setIsAllAnimalsOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'messages'>('dashboard');
   const t = translations[language];
 
   const [animals, setAnimals] = useState<Animal[]>([]);
@@ -177,6 +179,17 @@ export function ZookeeperDashboard({ schedule }: ZookeeperDashboardProps) {
                   </Button>
                   <Button
                     variant="ghost"
+                    className={`w-full justify-start ${activeTab === 'messages' ? 'bg-green-100' : ''}`}
+                    onClick={() => {
+                      setActiveTab('messages');
+                      setIsMenuOpen(false);
+                    }}
+                  >
+                    <MessageSquare className="w-5 h-5 mr-2" />
+                    {language === 'en' ? 'Messages' : 'संदेश'}
+                  </Button>
+                  <Button
+                    variant="ghost"
                     className="w-full justify-start"
                     onClick={() => {
                       setCurrentScreen('settings');
@@ -296,118 +309,130 @@ export function ZookeeperDashboard({ schedule }: ZookeeperDashboardProps) {
       </motion.div>
 
       <div className="p-6 space-y-6">
-        {/* Today's Tasks Widget */}
-
-        {/* Quick Actions */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-        >
-          <Card className="p-4 bg-white dark:bg-gray-800 hover:shadow-xl transition-shadow duration-300">
-            <motion.h3
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.5 }}
-              className="text-green-900 dark:text-green-100 mb-3"
-            >
-              {language === 'en' ? 'Quick Actions' : 'त्वरित क्रियाएं'}
-            </motion.h3>
-            <div className="grid grid-cols-2 gap-3">
-              <motion.div
-                whileHover={{ scale: 1.05, y: -5 }}
-                whileTap={{ scale: 0.95 }}
-                transition={{ type: "spring", stiffness: 400, damping: 17 }}
-              >
-                <Button
-                  onClick={() => setCurrentScreen('logHistory')}
-                  variant="outline"
-                  className="w-full h-20 flex flex-col gap-2 border-green-300 hover:bg-green-50 dark:hover:bg-green-900/20 transition-all duration-300 hover:shadow-lg"
-                >
-                  <History className="w-6 h-6 text-green-600 dark:text-green-400" />
-                  <span className="text-sm">{language === 'en' ? 'View History' : 'इतिहास देखें'}</span>
-                </Button>
-              </motion.div>
-              <motion.div
-                whileHover={{ scale: 1.05, y: -5 }}
-                whileTap={{ scale: 0.95 }}
-                transition={{ type: "spring", stiffness: 400, damping: 17 }}
-              >
-                <Button
-                  onClick={() => setShowSOS(true)}
-                  variant="outline"
-                  className="w-full h-20 flex flex-col gap-2 border-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-300 hover:shadow-lg"
-                >
-                  <motion.div
-                    animate={{ rotate: [0, -10, 10, -10, 0] }}
-                    transition={{ repeat: Infinity, duration: 2, repeatDelay: 3 }}
-                  >
-                    <AlertCircle className="w-6 h-6 text-red-600 dark:text-red-400" />
-                  </motion.div>
-                  <span className="text-sm">{language === 'en' ? 'SOS Alert' : 'SOS अलर्ट'}</span>
-                </Button>
-              </motion.div>
-              <motion.div
-                whileHover={{ scale: 1.05, y: -5 }}
-                whileTap={{ scale: 0.95 }}
-                transition={{ type: "spring", stiffness: 400, damping: 17 }}
-              >
-                <Button
-                  onClick={() => setCurrentScreen('taskManagement')}
-                  variant="outline"
-                  className="w-full h-20 flex flex-col gap-2 border-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all duration-300 hover:shadow-lg"
-                >
-                  <ClipboardList className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
-                  <span className="text-sm">{language === 'en' ? 'My Tasks' : 'मेरे कार्य'}</span>
-                </Button>
-              </motion.div>
-            </div>
-          </Card>
-        </motion.div>
-
-        {/* Submission Status */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-        >
-          <SubmissionStatus
-            morningSubmitted={schedule.morningSubmitted}
-            eveningSubmitted={schedule.eveningSubmitted}
+        {/* Conditional Content Based on Active Tab */}
+        {activeTab === 'messages' ? (
+          /* Messages View */
+          <MessagingInterface
             language={language}
+            currentUser={currentUser!}
           />
-        </motion.div>
+        ) : (
+          /* Dashboard View */
+          <>
+            {/* Today's Tasks Widget */}
 
-        {/* My Animals Section */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-green-900 dark:text-green-100">
-              {t.myAnimals} ({filteredAnimals.length})
-            </h2>
+            {/* Quick Actions */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+            >
+              <Card className="p-4 bg-white dark:bg-gray-800 hover:shadow-xl transition-shadow duration-300">
+                <motion.h3
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.5 }}
+                  className="text-green-900 dark:text-green-100 mb-3"
+                >
+                  {language === 'en' ? 'Quick Actions' : 'त्वरित क्रियाएं'}
+                </motion.h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <motion.div
+                    whileHover={{ scale: 1.05, y: -5 }}
+                    whileTap={{ scale: 0.95 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                  >
+                    <Button
+                      onClick={() => setCurrentScreen('logHistory')}
+                      variant="outline"
+                      className="w-full h-20 flex flex-col gap-2 border-green-300 hover:bg-green-50 dark:hover:bg-green-900/20 transition-all duration-300 hover:shadow-lg"
+                    >
+                      <History className="w-6 h-6 text-green-600 dark:text-green-400" />
+                      <span className="text-sm">{language === 'en' ? 'View History' : 'इतिहास देखें'}</span>
+                    </Button>
+                  </motion.div>
+                  <motion.div
+                    whileHover={{ scale: 1.05, y: -5 }}
+                    whileTap={{ scale: 0.95 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                  >
+                    <Button
+                      onClick={() => setShowSOS(true)}
+                      variant="outline"
+                      className="w-full h-20 flex flex-col gap-2 border-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-300 hover:shadow-lg"
+                    >
+                      <motion.div
+                        animate={{ rotate: [0, -10, 10, -10, 0] }}
+                        transition={{ repeat: Infinity, duration: 2, repeatDelay: 3 }}
+                      >
+                        <AlertCircle className="w-6 h-6 text-red-600 dark:text-red-400" />
+                      </motion.div>
+                      <span className="text-sm">{language === 'en' ? 'SOS Alert' : 'SOS अलर्ट'}</span>
+                    </Button>
+                  </motion.div>
+                  <motion.div
+                    whileHover={{ scale: 1.05, y: -5 }}
+                    whileTap={{ scale: 0.95 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                  >
+                    <Button
+                      onClick={() => setCurrentScreen('taskManagement')}
+                      variant="outline"
+                      className="w-full h-20 flex flex-col gap-2 border-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all duration-300 hover:shadow-lg"
+                    >
+                      <ClipboardList className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+                      <span className="text-sm">{language === 'en' ? 'My Tasks' : 'मेरे कार्य'}</span>
+                    </Button>
+                  </motion.div>
+                </div>
+              </Card>
+            </motion.div>
+
+            {/* Submission Status */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+            >
+              <SubmissionStatus
+                morningSubmitted={schedule.morningSubmitted}
+                eveningSubmitted={schedule.eveningSubmitted}
+                language={language}
+              />
+            </motion.div>
+
+            {/* My Animals Section */}
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-green-900 dark:text-green-100">
+                  {t.myAnimals} ({filteredAnimals.length})
+                </h2>
+              </div>
+
+              <div className="space-y-3">
+                {filteredAnimals.map((animal, index) => (
+                  <motion.div
+                    key={animal.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                  >
+                    <AnimalCard animal={animal} />
+                  </motion.div>
+                ))}
+              </div>
+
+              {filteredAnimals.length === 0 && (
+                <Card className="p-8 text-center bg-white/50">
+                  <p className="text-gray-500">
+                    {language === 'en' ? 'No animals found' : 'कोई जानवर नहीं मिला'}
+                  </p>
+                </Card>
+              )}
+            </div>
           </div>
-
-          <div className="space-y-3">
-            {filteredAnimals.map((animal, index) => (
-              <motion.div
-                key={animal.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-              >
-                <AnimalCard animal={animal} />
-              </motion.div>
-            ))}
-          </div>
-
-          {filteredAnimals.length === 0 && (
-            <Card className="p-8 text-center bg-white/50">
-              <p className="text-gray-500">
-                {language === 'en' ? 'No animals found' : 'कोई जानवर नहीं मिला'}
-              </p>
-            </Card>
-          )}
-        </div>
-      </div>
+      </>
+        )}
 
       {/* Floating SOS Button */}
       <motion.div
