@@ -264,14 +264,16 @@ Observation Text: {observation}
                 from groq import Groq
                 import io
                 
+                # Initialize Groq client (newer version doesn't need proxies parameter)
                 client = Groq(api_key=groq_key)
                 
                 # Convert bytes to file-like object
                 audio_file = io.BytesIO(audio_bytes)
                 audio_file.name = "audio.webm"
                 
+                # Create transcription
                 transcription = client.audio.transcriptions.create(
-                    file=("audio.webm", audio_file, content_type),
+                    file=("audio.webm", audio_file),
                     model="whisper-large-v3",
                     language="hi",  # Hindi
                     response_format="text"
@@ -286,6 +288,7 @@ Observation Text: {observation}
                     print("⚠️ Groq also returned empty transcript")
             except Exception as e:
                 print(f"⚠️ Groq Whisper error: {e}")
+
         
         # If both failed or returned empty
         if not transcript:
