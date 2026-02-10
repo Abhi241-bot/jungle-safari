@@ -431,128 +431,128 @@ export function ZookeeperDashboard({ schedule }: ZookeeperDashboardProps) {
               )}
             </div>
           </div>
-      </>
         )}
 
-      {/* Floating SOS Button */}
-      <motion.div
-        className="fixed bottom-6 right-6 z-50"
-        animate={{ scale: [1, 1.05, 1] }}
-        transition={{ duration: 2, repeat: Infinity }}
-      >
-        <Button
-          onClick={() => setShowSOS(true)}
-          className="w-16 h-16 rounded-full bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 shadow-2xl"
-          size="icon"
+        {/* Floating SOS Button */}
+        <motion.div
+          className="fixed bottom-6 right-6 z-50"
+          animate={{ scale: [1, 1.05, 1] }}
+          transition={{ duration: 2, repeat: Infinity }}
         >
-          <AlertTriangle className="w-8 h-8" />
-        </Button>
-      </motion.div>
+          <Button
+            onClick={() => setShowSOS(true)}
+            className="w-16 h-16 rounded-full bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 shadow-2xl"
+            size="icon"
+          >
+            <AlertTriangle className="w-8 h-8" />
+          </Button>
+        </motion.div>
 
-      {/* Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg">
-        <div className="flex items-center justify-around p-3">
-          <Button
-            variant="ghost"
-            className="flex-1 flex flex-col items-center gap-1 h-auto py-2 text-green-600"
-            onClick={() => setCurrentScreen('dashboard')}
-          >
-            <div className="w-8 h-1 bg-green-600 rounded-full mb-1"></div>
-            <span className="text-xs">{t.dashboard}</span>
-          </Button>
-          <Button
-            variant="ghost"
-            className="flex-1 flex flex-col items-center gap-1 h-auto py-2 text-gray-500"
-            onClick={() => setCurrentScreen('settings')}
-          >
-            <AlertCircle className="w-5 h-5" />
-            <span className="text-xs">{t.alerts}</span>
-          </Button>
+        {/* Bottom Navigation */}
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg">
+          <div className="flex items-center justify-around p-3">
+            <Button
+              variant="ghost"
+              className="flex-1 flex flex-col items-center gap-1 h-auto py-2 text-green-600"
+              onClick={() => setCurrentScreen('dashboard')}
+            >
+              <div className="w-8 h-1 bg-green-600 rounded-full mb-1"></div>
+              <span className="text-xs">{t.dashboard}</span>
+            </Button>
+            <Button
+              variant="ghost"
+              className="flex-1 flex flex-col items-center gap-1 h-auto py-2 text-gray-500"
+              onClick={() => setCurrentScreen('settings')}
+            >
+              <AlertCircle className="w-5 h-5" />
+              <span className="text-xs">{t.alerts}</span>
+            </Button>
+          </div>
         </div>
-      </div>
 
-      {/* All Animals Sheet */}
-      <Sheet open={isAllAnimalsOpen} onOpenChange={setIsAllAnimalsOpen}>
-        <SheetContent side="bottom" className="h-[85vh] bg-gradient-to-b from-green-50 to-teal-50">
-          <SheetHeader>
-            <SheetTitle className="text-green-900">
-              {language === 'en' ? 'All Animals' : 'सभी जानवर'}
-            </SheetTitle>
-            <SheetDescription>
-              {language === 'en' ? `Total ${animals.length} animals in the zoo` : `चिड़ियाघर में कुल ${animals.length} जानवर`}
-            </SheetDescription>
-          </SheetHeader>
-          <div className="mt-6 space-y-3 overflow-y-auto h-[calc(85vh-120px)] pb-6">
-            {animals.map((animal, index) => (
-              <motion.div
-                key={animal.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-              >
-                <Card
-                  className="p-4 bg-white cursor-pointer hover:shadow-lg transition-shadow"
-                  onClick={() => {
-                    setSelectedAnimal(animal);
-                    setCurrentScreen('animal-profile');
-                    setIsAllAnimalsOpen(false);
-                  }}
+        {/* All Animals Sheet */}
+        <Sheet open={isAllAnimalsOpen} onOpenChange={setIsAllAnimalsOpen}>
+          <SheetContent side="bottom" className="h-[85vh] bg-gradient-to-b from-green-50 to-teal-50">
+            <SheetHeader>
+              <SheetTitle className="text-green-900">
+                {language === 'en' ? 'All Animals' : 'सभी जानवर'}
+              </SheetTitle>
+              <SheetDescription>
+                {language === 'en' ? `Total ${animals.length} animals in the zoo` : `चिड़ियाघर में कुल ${animals.length} जानवर`}
+              </SheetDescription>
+            </SheetHeader>
+            <div className="mt-6 space-y-3 overflow-y-auto h-[calc(85vh-120px)] pb-6">
+              {animals.map((animal, index) => (
+                <motion.div
+                  key={animal.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
                 >
-                  <div className="flex gap-4">
-                    <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
-                      <ImageWithFallback
-                        src={animal.image}
-                        alt={animal.name}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-start justify-between mb-2">
-                        <div>
-                          <h3 className="text-green-900">{animal.name}</h3>
-                          <p className="text-sm text-gray-600">
-                            {animal.species} • #{animal.number}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {language === 'en' ? 'Assigned to' : 'को सौंपा गया'}: {animal.assignedTo}
-                          </p>
-                        </div>
-                        <Badge
-                          className={
-                            animal.health === 'excellent'
-                              ? 'bg-green-500 text-white'
-                              : animal.health === 'good'
-                                ? 'bg-blue-500 text-white'
-                                : animal.health === 'fair'
-                                  ? 'bg-yellow-500 text-white'
-                                  : 'bg-red-500 text-white'
-                          }
-                        >
-                          {animal.health === 'excellent'
-                            ? language === 'en'
-                              ? 'Excellent'
-                              : 'उत्कृष्ट'
-                            : animal.health === 'good'
+                  <Card
+                    className="p-4 bg-white cursor-pointer hover:shadow-lg transition-shadow"
+                    onClick={() => {
+                      setSelectedAnimal(animal);
+                      setCurrentScreen('animal-profile');
+                      setIsAllAnimalsOpen(false);
+                    }}
+                  >
+                    <div className="flex gap-4">
+                      <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
+                        <ImageWithFallback
+                          src={animal.image}
+                          alt={animal.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-start justify-between mb-2">
+                          <div>
+                            <h3 className="text-green-900">{animal.name}</h3>
+                            <p className="text-sm text-gray-600">
+                              {animal.species} • #{animal.number}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {language === 'en' ? 'Assigned to' : 'को सौंपा गया'}: {animal.assignedTo}
+                            </p>
+                          </div>
+                          <Badge
+                            className={
+                              animal.health === 'excellent'
+                                ? 'bg-green-500 text-white'
+                                : animal.health === 'good'
+                                  ? 'bg-blue-500 text-white'
+                                  : animal.health === 'fair'
+                                    ? 'bg-yellow-500 text-white'
+                                    : 'bg-red-500 text-white'
+                            }
+                          >
+                            {animal.health === 'excellent'
                               ? language === 'en'
-                                ? 'Good'
-                                : 'अच्छा'
-                              : animal.health === 'fair'
+                                ? 'Excellent'
+                                : 'उत्कृष्ट'
+                              : animal.health === 'good'
                                 ? language === 'en'
-                                  ? 'Fair'
-                                  : 'ठीक'
-                                : language === 'en'
-                                  ? 'Poor'
-                                  : 'खराब'}
-                        </Badge>
+                                  ? 'Good'
+                                  : 'अच्छा'
+                                : animal.health === 'fair'
+                                  ? language === 'en'
+                                    ? 'Fair'
+                                    : 'ठीक'
+                                  : language === 'en'
+                                    ? 'Poor'
+                                    : 'खराब'}
+                          </Badge>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </SheetContent>
-      </Sheet>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          </SheetContent>
+        </Sheet>
+      </div>
     </motion.div>
   );
 }
