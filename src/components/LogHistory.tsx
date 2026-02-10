@@ -14,6 +14,7 @@ import { ImageWithFallback } from './figma/ImageWithFallback';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Loader } from 'lucide-react';
 
+
 interface LogEntry {
   id: string;
   animalId: string;
@@ -32,22 +33,75 @@ interface LogEntry {
   transcribedText?: string; // Raw transcribed text
   fullObservationText?: string; // Prefix + transcribed text
 
-  // AI-extracted fields
+  // Metadata
   date_or_day?: string;
   incharge_signature?: string;
-  daily_animal_health_monitoring?: string;
-  other_animal_requirements?: string;
-  carnivorous_animal_feeding_chart?: string;
-  medicine_stock_register?: string;
-  daily_wildlife_monitoring?: string;
-  animal_observed_on_time?: boolean;
-  clean_drinking_water_provided?: boolean;
-  enclosure_cleaned_properly?: boolean;
-  normal_behaviour_status?: boolean;
-  normal_behaviour_details?: string;
-  feed_and_supplements_available?: boolean;
-  feed_given_as_prescribed?: boolean;
+
+  // SECTION A: DAILY ANIMAL HEALTH (GENERAL) REPORTING
+
+  // 1. Feeding & Drinking
+  feed_consumption_percentage?: string;
+  feed_quantity_consumed?: string;
+  water_consumption_normal?: boolean;
+  digestion_problem?: boolean;
+  digestion_problem_details?: string;
+
+  // 2. Health & Physical Condition
+  injury_or_illness_noticed?: boolean;
+  animal_weak_or_lethargic?: boolean;
+  health_problem_details?: string;
+
+  // 3. Behaviour & Activity Level
+  activity_level?: string;
+  alert_and_responsive?: boolean;
+
+  // 4. Reproductive Status
+  reproductive_signs_observed?: boolean;
+  reproductive_signs_description?: string;
+
+  // 5. Mortality / Critical Condition
+  critical_condition_observed?: boolean;
+  critical_condition_details?: string;
+
+  // 6. Hygiene, Pest & Safety Check
+  pests_noticed?: boolean;
+  safety_risks_noticed?: boolean;
+  safety_risk_details?: string;
+
+  // 7. Additional Observations
+  additional_observations?: string;
+
+  // ENCLOSURE (GENERAL) REPORT
+
+  // 1. Cleanliness & Waste
+  enclosure_cleaning_time?: string;
+  waste_removed_properly?: boolean;
+  waste_removal_issue?: string;
+
+  // 2. Water & Sanitation
+  water_trough_cleaned?: boolean;
+  fresh_water_available?: boolean;
+
+  // 3. Fencing & Locking
+  fencing_secure_and_functioning?: boolean;
+  fencing_issue_details?: string;
+
+  // 4. Moat Condition
+  moat_condition?: string;
+
+  // 5. Pest Control
+  enclosure_pests_noticed?: boolean;
+
+  // 6. Staff Status
+  staff_attendance_complete?: boolean;
+
+  // 7. Final Safety
+  all_secured_before_closing?: boolean;
+
+  // 8. Remarks
+  enclosure_remarks?: string;
 }
+
 
 export function LogHistory() {
   const { language, setCurrentScreen, selectedAnimal, setSelectedAnimal } = useContext(AppContext);

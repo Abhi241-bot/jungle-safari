@@ -6,23 +6,76 @@ from langchain.output_parsers import PydanticOutputParser
 import google.generativeai as genai
 
 # ----------------------------
-# Schema for structured data
+# Schema for structured data - NEW COMPREHENSIVE FORMAT
 # ----------------------------
 class AnimalMonitoringData(BaseModel):
+    # Metadata
     date_or_day: str = Field(..., description="Date or day of observation")
-    animal_observed_on_time: bool = Field(..., description="Was the animal seen at the scheduled observation time?")
-    clean_drinking_water_provided: bool = Field(..., description="Was clean drinking water available?")
-    enclosure_cleaned_properly: bool = Field(..., description="Was the enclosure cleaned as required?")
-    normal_behaviour_status: bool = Field(..., description="Is the animal showing normal behaviour and activity?")
-    normal_behaviour_details: str | None = Field(None, description="If abnormal behaviour observed, provide details")
-    feed_and_supplements_available: bool = Field(..., description="Was feed and supplements available?")
-    feed_given_as_prescribed: bool = Field(..., description="Was the feed given as prescribed?")
-    other_animal_requirements: str | None = Field(None, description="Any other special needs or requirements")
     incharge_signature: str = Field(..., description="Signature of caretaker or in-charge")
-    daily_animal_health_monitoring: str = Field(..., description="Summary of daily animal health monitoring")
-    carnivorous_animal_feeding_chart: str = Field(..., description="Summary of carnivorous animal feeding chart")
-    medicine_stock_register: str = Field(..., description="Summary of medicine stock register")
-    daily_wildlife_monitoring: str = Field(..., description="Summary of daily wildlife monitoring observations")
+    
+    # ========== SECTION A: DAILY ANIMAL HEALTH (GENERAL) REPORTING ==========
+    
+    # 1. Feeding & Drinking
+    feed_consumption_percentage: str = Field(..., description="Feed consumption: 25%, 50%, 75%, or 100%")
+    feed_quantity_consumed: str = Field(..., description="Quantity consumed in kg or litres")
+    water_consumption_normal: bool = Field(..., description="Did the animal drink water normally?")
+    digestion_problem: bool = Field(..., description="Any vomiting, diarrhoea, or digestion problem?")
+    digestion_problem_details: str | None = Field(None, description="Details of digestion problem if any")
+    
+    # 2. Health & Physical Condition
+    injury_or_illness_noticed: bool = Field(..., description="Any injury, swelling, wound, discharge, limping, or illness?")
+    animal_weak_or_lethargic: bool = Field(..., description="Did the animal appear weak, lethargic, or uncomfortable?")
+    health_problem_details: str | None = Field(None, description="Details of health problems if any")
+    
+    # 3. Behaviour & Activity Level
+    activity_level: str = Field(..., description="Activity level: More active, Normal, Less active, or Very dull")
+    alert_and_responsive: bool = Field(..., description="Was the animal alert and responsive?")
+    
+    # 4. Reproductive Status
+    reproductive_signs_observed: bool = Field(..., description="Any mating, heat, pregnancy, or birth signs?")
+    reproductive_signs_description: str | None = Field(None, description="Description of reproductive signs if any")
+    
+    # 5. Mortality / Critical Condition
+    critical_condition_observed: bool = Field(..., description="Any death, serious injury, or critical illness?")
+    critical_condition_details: str | None = Field(None, description="Details of critical condition if any")
+    
+    # 6. Hygiene, Pest & Safety Check
+    pests_noticed: bool = Field(..., description="Were flies, rodents, insects, or pests noticed?")
+    safety_risks_noticed: bool = Field(..., description="Any broken fence, sharp object, or safety risk?")
+    safety_risk_details: str | None = Field(None, description="Details of safety risks if any")
+    
+    # 7. Additional Observations / Remarks
+    additional_observations: str | None = Field(None, description="Any unusual, important, or noteworthy observations")
+    
+    # ========== ENCLOSURE (GENERAL) REPORT ==========
+    
+    # 1. Overall Cleanliness & Waste Management
+    enclosure_cleaning_time: str = Field(..., description="Time when enclosure was cleaned")
+    waste_removed_properly: bool = Field(..., description="Was waste removed and water area cleaned properly?")
+    waste_removal_issue: str | None = Field(None, description="Reason if waste not removed properly")
+    
+    # 2. Water & Sanitation
+    water_trough_cleaned: bool = Field(..., description="Was the water trough cleaned today?")
+    fresh_water_available: bool = Field(..., description="Was fresh and sufficient water available?")
+    
+    # 3. Fencing, Cages & Locking Systems Check
+    fencing_secure_and_functioning: bool = Field(..., description="Were all fences, cages, doors, and locks secure?")
+    fencing_issue_details: str | None = Field(None, description="Details of fencing/locking issues if any")
+    
+    # 4. Moat & Physical Barrier Condition
+    moat_condition: str = Field(..., description="Moat condition: Dry, Wet, Partially Filled, or Not Applicable")
+    
+    # 5. Pest, Vector & Hygiene Control
+    enclosure_pests_noticed: bool = Field(..., description="Were flies, mosquitoes, rodents, or insects noticed?")
+    
+    # 6. Staff Uniform, Attendance & Health Status
+    staff_attendance_complete: bool = Field(..., description="Was staff attendance complete?")
+    
+    # 7. Final Safety Verification
+    all_secured_before_closing: bool = Field(..., description="Were all cells, cages, and gates secured before closing?")
+    
+    # 8. Remarks / Follow-up Required
+    enclosure_remarks: str | None = Field(None, description="Any unusual observation, pending repair, or urgent action required")
 
 
 # ----------------------------
@@ -48,64 +101,114 @@ class ZooAIModel:
         self.parser = PydanticOutputParser(pydantic_object=AnimalMonitoringData)
         self.prompt = PromptTemplate(
             template="""
-                You are an expert zoo monitoring assistant. Your task is to analyze an observation log
-                for a specific animal and convert it into a structured JSON format.
+You are an expert zoo monitoring assistant. Your task is to analyze an observation log
+for a specific animal and convert it into a structured JSON format based on the NEW COMPREHENSIVE FORMAT.
 
-                **Animal Being Observed:** {animal_name}
-                **Date of Observation:** {date}
+**Animal Being Observed:** {animal_name}
+**Date of Observation:** {date}
 
-                **FORMAT DETECTION:**
-                - If observation starts with "Guided 16-question inspection log:", this is a STRUCTURED FORMAT
-                - Otherwise, treat as FREE-FORM observation text
-                
-                **FOR GUIDED 16-QUESTION FORMAT:**
-                The observation contains answers to 16 specific questions. Map them as follows:
-                - Q1 (Feed/water/digestion) → `feed_given_as_prescribed`, `feed_and_supplements_available`
-                - Q2 (Injury/illness) → `normal_behaviour_status`, `normal_behaviour_details`
-                - Q3 (Behavior/activity) → Include in `daily_animal_health_monitoring`
-                - Q4 (Mating/pregnancy) → Include in `daily_animal_health_monitoring`
-                - Q5 (Death/critical) → Include in `daily_animal_health_monitoring`
-                - Q6 (Enclosure cleanliness) → `enclosure_cleaned_properly`
-                - Q7 (Hygiene/pest/safety) → Include in `daily_wildlife_monitoring`
-                - Q8 (Staff status) → Extract name to `incharge_signature`
-                - Q9 (Other observations) → `other_animal_requirements`
-                - Q10 (Enclosure checked) → `enclosure_cleaned_properly`
-                - Q11 (Water trough) → `clean_drinking_water_provided`
-                - Q12-Q15 (Fence/moat/pest/staff) → Include in `daily_wildlife_monitoring`
-                - Q16 (Kraal chemical) → Include in `daily_wildlife_monitoring`
-                
-                Synthesize all Q1-Q9 answers into a comprehensive `daily_animal_health_monitoring` summary.
+**NEW FORMAT - EXTRACT THE FOLLOWING:**
 
-                **CRITICAL INSTRUCTIONS:**
-                1.  Read the observation text VERY CAREFULLY. It may be in Hindi, English, or mixed.
-                2.  EXTRACT SPECIFIC DETAILS from the text - do NOT make generic assumptions.
-                3.  For each field, look for CONCRETE EVIDENCE in the text:
-                    - If text mentions "सुबह 7 बजे" or "7 AM", note the specific time
-                    - If text mentions names like "राकेश" or "Rakesh", use the ACTUAL name
-                    - If text mentions specific foods like "गन्ना, केला" or "sugarcane, banana", list them
-                    - If text mentions medicine/vitamins, include those details
-                    - If text mentions specific requirements like "छाया के लिए पेड़" or "trees for shade", extract that
-                
-                4.  Field-specific extraction rules:
-                    - `incharge_signature`: Extract the ACTUAL name from text (e.g., "राकेश कुमार" or "Rakesh Kumar"). If not found, use "Zookeeper"
-                    - `daily_animal_health_monitoring`: Summarize health status, behavior, any issues mentioned
-                    - `other_animal_requirements`: Extract SPECIFIC needs mentioned (e.g., "Need trees for shade, need mud pit for bathing")
-                    - `carnivorous_animal_feeding_chart`: If animal is carnivore, extract meat feeding details. If herbivore, state "Not applicable - herbivore"
-                    - `medicine_stock_register`: Extract medicine/vitamin details if mentioned, otherwise "No medicine administered"
-                    - `daily_wildlife_monitoring`: Summarize overall observation with specific details (weight, behavior, time observed)
-                
-                5.  Boolean fields (true/false):
-                    - Look for keywords: "समय पर देखा" = observed on time (true)
-                    - "साफ पानी" = clean water (true)
-                    - "सफाई की गई" = cleaned (true)
-                    - "सामान्य व्यवहार" = normal behavior (true)
-                    - If NOT mentioned, assume true unless there's evidence of a problem
-                
-                6.  Return ONLY a valid JSON object. No extra text, comments, or markdown.
+SECTION A: DAILY ANIMAL HEALTH (GENERAL) REPORTING
 
-                {format_instructions}
+1. Feeding & Drinking:
+   - feed_consumption_percentage: How much feed consumed? (25%, 50%, 75%, or 100%)
+   - feed_quantity_consumed: Quantity in kg or litres
+   - water_consumption_normal: Did animal drink normally? (true/false)
+   - digestion_problem: Any vomiting/diarrhoea/digestion issue? (true/false)
+   - digestion_problem_details: Details if yes
 
-                Observation Text: {observation}
+2. Health & Physical Condition:
+   - injury_or_illness_noticed: Any injury/swelling/wound/discharge/limping/illness? (true/false)
+   - animal_weak_or_lethargic: Weak/lethargic/uncomfortable? (true/false)
+   - health_problem_details: Details if yes
+
+3. Behaviour & Activity Level:
+   - activity_level: "More active", "Normal", "Less active", or "Very dull"
+   - alert_and_responsive: Was animal alert? (true/false)
+
+4. Reproductive Status:
+   - reproductive_signs_observed: Any mating/heat/pregnancy/birth signs? (true/false)
+   - reproductive_signs_description: Description if yes
+
+5. Mortality / Critical Condition:
+   - critical_condition_observed: Any death/serious injury/critical illness? (true/false)
+   - critical_condition_details: Details if yes
+
+6. Hygiene, Pest & Safety Check:
+   - pests_noticed: Flies/rodents/insects/pests? (true/false)
+   - safety_risks_noticed: Broken fence/sharp object/safety risk? (true/false)
+   - safety_risk_details: Details if yes
+
+7. Additional Observations:
+   - additional_observations: Any unusual/important/noteworthy observations
+
+ENCLOSURE (GENERAL) REPORT
+
+1. Cleanliness & Waste:
+   - enclosure_cleaning_time: Time when cleaned (e.g., "7:00 AM")
+   - waste_removed_properly: Waste removed properly? (true/false)
+   - waste_removal_issue: Reason if not removed properly
+
+2. Water & Sanitation:
+   - water_trough_cleaned: Trough cleaned? (true/false)
+   - fresh_water_available: Fresh water available? (true/false)
+
+3. Fencing & Locking:
+   - fencing_secure_and_functioning: All secure and functioning? (true/false)
+   - fencing_issue_details: Issue details if not secure
+
+4. Moat Condition:
+   - moat_condition: "Dry", "Wet", "Partially Filled", or "Not Applicable"
+
+5. Pest Control:
+   - enclosure_pests_noticed: Pests in enclosure? (true/false)
+
+6. Staff Status:
+   - staff_attendance_complete: Attendance complete? (true/false)
+
+7. Final Safety:
+   - all_secured_before_closing: All secured before closing? (true/false)
+
+8. Remarks:
+   - enclosure_remarks: Unusual observations/pending repairs/urgent actions
+
+METADATA:
+- date_or_day: Extract date from observation or use {date}
+- incharge_signature: Extract zookeeper name or use "Zookeeper"
+
+**CRITICAL INSTRUCTIONS:**
+1. Read observation text VERY CAREFULLY (may be Hindi, English, or mixed)
+2. EXTRACT SPECIFIC DETAILS - do NOT make generic assumptions
+3. For boolean fields: Look for evidence in text. If not mentioned, use reasonable defaults:
+   - water_consumption_normal: true (unless problem mentioned)
+   - digestion_problem: false (unless mentioned)
+   - injury_or_illness_noticed: false (unless mentioned)
+   - animal_weak_or_lethargic: false (unless mentioned)
+   - alert_and_responsive: true (unless problem mentioned)
+   - reproductive_signs_observed: false (unless mentioned)
+   - critical_condition_observed: false (unless mentioned)
+   - pests_noticed: false (unless mentioned)
+   - safety_risks_noticed: false (unless mentioned)
+   - waste_removed_properly: true (unless problem mentioned)
+   - water_trough_cleaned: true (unless problem mentioned)
+   - fresh_water_available: true (unless problem mentioned)
+   - fencing_secure_and_functioning: true (unless problem mentioned)
+   - enclosure_pests_noticed: false (unless mentioned)
+   - staff_attendance_complete: true (unless problem mentioned)
+   - all_secured_before_closing: true (unless problem mentioned)
+
+4. For percentage/choice fields:
+   - feed_consumption_percentage: Estimate from text (25%, 50%, 75%, 100%)
+   - activity_level: Determine from description (More active/Normal/Less active/Very dull)
+   - moat_condition: Extract or use "Not Applicable"
+
+5. Extract ACTUAL names, times, quantities from text
+6. Return ONLY valid JSON. No extra text or markdown.
+
+{format_instructions}
+
+Observation Text: {observation}
             """,
             input_variables=["observation", "animal_name", "date"],
             partial_variables={"format_instructions": self.parser.get_format_instructions()},
