@@ -317,8 +317,8 @@ export function ZookeeperDashboard({ schedule }: ZookeeperDashboardProps) {
             currentUser={currentUser!}
           />
         ) : (
-          /* Dashboard View */
-          <>
+          /* Dashboard View - All dashboard content goes here */
+          <div>
             {/* Today's Tasks Widget */}
 
             {/* Quick Actions */}
