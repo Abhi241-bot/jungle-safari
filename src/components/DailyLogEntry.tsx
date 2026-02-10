@@ -135,7 +135,7 @@ export function DailyLogEntry({ onLogSubmitted }: DailyLogEntryProps = {}) {
     const formData = new FormData();
     formData.append('audio', audioBlob, 'guided-recording.webm');
     formData.append('date', new Date().toISOString());
-    formData.append('prefix', 'Guided 16-question inspection log: ');
+    formData.append('prefix', 'Comprehensive zoo inspection log - Section A (Animal Health) and Enclosure Report: ');
     formData.append('animalId', selectedAnimal?.id || '');
 
     try {

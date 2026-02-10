@@ -78,25 +78,25 @@ export const translations = {
     healthReports: 'Health Reports',
     voiceLogs: 'Voice Logs',
 
-    // Voice Recording Questions - Animal Health
-    question1: 'How did the animal eat and drink today, and how was its digestion?',
-    question2: 'Did you notice any injury, illness, weakness, or abnormal physical condition in the animal?',
-    question3: 'How was the animal\'s behaviour and activity compared to normal?',
-    question4: 'Was there any mating activity, heat signs, pregnancy, or birth observed today?',
-    question5: 'Was there any death or critical condition observed in the enclosure today?',
-    question6: 'How was the condition and cleanliness of the enclosure and surrounding area today?',
-    question7: 'Were there any hygiene, pest, or safety issues noticed today?',
-    question8: 'Was staff attendance, uniform compliance, and health normal today?',
-    question9: 'Is there anything else unusual or important that should be recorded today?',
+    // Voice Recording Questions - SECTION A: DAILY ANIMAL HEALTH
+    question1: '1. Feeding & Drinking: How much feed did the animal consume (25%, 50%, 75%, 100%)? What quantity in kg/litres? Did it drink water normally? Any vomiting, diarrhoea, or digestion problems?',
+    question2: '2. Health & Physical Condition: Any injury, swelling, wound, discharge, limping, or illness noticed? Did the animal appear weak, lethargic, or uncomfortable?',
+    question3: '3. Behaviour & Activity: Was the animal more active, normal, less active, or very dull? Was it alert and responsive?',
+    question4: '4. Reproductive Status: Any mating activity, heat signs, pregnancy, or birth observed?',
+    question5: '5. Mortality / Critical Condition: Any death, serious injury, or critical illness observed?',
+    question6: '6. Hygiene, Pest & Safety: Were flies, rodents, insects, or pests noticed? Any broken fence, sharp objects, or safety risks?',
+    question7: '7. Additional Observations: Any unusual, important, or noteworthy observations?',
 
-    // Voice Recording Questions - Enclosure Health
-    question10: 'Was enclosure cleanliness checked?',
-    question11: 'Was the water trough cleaned?',
-    question12: 'Is the fence condition satisfactory?',
-    question13: 'What is the moat condition - Dry or Wet?',
-    question14: 'Were fly and mosquito control measures taken?',
-    question15: 'Is staff uniform and health satisfactory?',
-    question16: 'Was weekly cleaning done with Sodium hypochlorite or Lime water?',
+    // Voice Recording Questions - ENCLOSURE (GENERAL) REPORT
+    question8: '1. Cleanliness & Waste: What time was the enclosure cleaned? Was waste removed properly and water area cleaned? If not, why?',
+    question9: '2. Water & Sanitation: Was the water trough cleaned today? Is fresh and sufficient water available?',
+    question10: '3. Fencing & Locking: Are all fences, cages, doors, and locks secure and functioning properly? Any issues?',
+    question11: '4. Moat Condition: What is the moat condition - Dry, Wet, Partially Filled, or Not Applicable?',
+    question12: '5. Pest Control: Were flies, mosquitoes, rodents, or insects noticed in the enclosure?',
+    question13: '6. Staff Status: Was staff attendance complete today?',
+    question14: '7. Final Safety: Were all cells, cages, and gates secured before closing?',
+    question15: '8. Remarks: Any unusual observation, pending repair, or urgent action required?',
+
   },
   hi: {
     zookeeper: 'चिड़ियाघर कीपर',
@@ -167,24 +167,25 @@ export const translations = {
     healthReports: 'स्वास्थ्य रिपोर्ट',
     voiceLogs: 'वॉयस लॉग',
 
-    // Voice Recording Questions - Animal Health
-    question1: 'आज जानवर ने खाना और पानी कैसे लिया, और उसका पाचन कैसा रहा?',
-    question2: 'क्या आज जानवर में कोई चोट, बीमारी, कमजोरी या असामान्य शारीरिक स्थिति दिखाई दी?',
-    question3: 'आज जानवर का व्यवहार और गतिविधि सामान्य थी या कुछ अलग दिखाई दी?',
-    question4: 'क्या आज किसी प्रकार की मेटिंग, हीट की स्थिति, गर्भावस्था या बच्चे का जन्म देखा गया?',
-    question5: 'क्या आज बाड़े में किसी जानवर की मृत्यु या गंभीर स्थिति देखी गई?',
-    question6: 'आज बाड़े और आसपास की साफ़-सफाई और रखरखाव की स्थिति कैसी रही?',
-    question7: 'क्या आज स्वच्छता, मच्छर, मक्खी या सुरक्षा से जुड़ी कोई समस्या देखी गई?',
-    question8: 'क्या आज कर्मचारियों की उपस्थिति, वर्दी और स्वास्थ्य की स्थिति सामान्य रही?',
-    question9: 'क्या आज कोई अन्य विशेष या महत्वपूर्ण बात है जिसे दर्ज किया जाना चाहिए?',
 
-    // Voice Recording Questions - Enclosure Health
-    question10: 'क्या बाड़े की सफाई जांची गई?',
-    question11: 'क्या पानी का गर्त साफ किया गया?',
-    question12: 'क्या बाड़ की स्थिति संतोषजनक है?',
-    question13: 'खाई की स्थिति क्या है - सूखी या गीली?',
-    question14: 'क्या मक्खी और मच्छर नियंत्रण उपाय किए गए?',
-    question15: 'क्या कर्मचारियों की वर्दी और स्वास्थ्य संतोषजनक है?',
-    question16: 'क्या साप्ताहिक सफाई सोडियम हाइपोक्लोराइट या चूने के पानी से की गई?',
+    // Voice Recording Questions - SECTION A: DAILY ANIMAL HEALTH (Hindi)
+    question1: '1. भोजन और पानी: जानवर ने कितना भोजन खाया (25%, 50%, 75%, 100%)? कितनी मात्रा में (kg/लीटर)? क्या पानी सामान्य रूप से पिया? कोई उल्टी, दस्त, या पाचन समस्या?',
+    question2: '2. स्वास्थ्य और शारीरिक स्थिति: कोई चोट, सूजन, घाव, स्राव, लंगड़ापन, या बीमारी दिखाई दी? क्या जानवर कमजोर, सुस्त, या असहज दिखाई दिया?',
+    question3: '3. व्यवहार और गतिविधि: क्या जानवर अधिक सक्रिय, सामान्य, कम सक्रिय, या बहुत सुस्त था? क्या यह सतर्क और उत्तरदायी था?',
+    question4: '4. प्रजनन स्थिति: कोई मेटिंग गतिविधि, हीट के संकेत, गर्भावस्था, या जन्म देखा गया?',
+    question5: '5. मृत्यु / गंभीर स्थिति: कोई मृत्यु, गंभीर चोट, या गंभीर बीमारी देखी गई?',
+    question6: '6. स्वच्छता, कीट और सुरक्षा: मक्खियां, चूहे, कीड़े, या कीट देखे गए? कोई टूटी बाड़, तेज वस्तु, या सुरक्षा जोखिम?',
+    question7: '7. अतिरिक्त अवलोकन: कोई असामान्य, महत्वपूर्ण, या उल्लेखनीय अवलोकन?',
+
+    // Voice Recording Questions - ENCLOSURE (GENERAL) REPORT (Hindi)
+    question8: '1. सफाई और कचरा: बाड़ा किस समय साफ किया गया? क्या कचरा ठीक से हटाया गया और पानी का क्षेत्र साफ किया गया? यदि नहीं, तो क्यों?',
+    question9: '2. पानी और स्वच्छता: क्या आज पानी का गर्त साफ किया गया? क्या ताजा और पर्याप्त पानी उपलब्ध है?',
+    question10: '3. बाड़ और ताला: क्या सभी बाड़, पिंजरे, दरवाजे और ताले सुरक्षित और ठीक से काम कर रहे हैं? कोई समस्या?',
+    question11: '4. खाई की स्थिति: खाई की स्थिति क्या है - सूखी, गीली, आंशिक रूप से भरी हुई, या लागू नहीं?',
+    question12: '5. कीट नियंत्रण: क्या बाड़े में मक्खियां, मच्छर, चूहे, या कीड़े देखे गए?',
+    question13: '6. कर्मचारी स्थिति: क्या आज कर्मचारियों की उपस्थिति पूर्ण थी?',
+    question14: '7. अंतिम सुरक्षा: क्या बंद करने से पहले सभी कोशिकाएं, पिंजरे और गेट सुरक्षित किए गए?',
+    question15: '8. टिप्पणियाँ: कोई असामान्य अवलोकन, लंबित मरम्मत, या तत्काल कार्रवाई आवश्यक?',
+
   },
 };
