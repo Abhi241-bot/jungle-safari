@@ -899,7 +899,31 @@ def delete_hospital_record(record_id):
         return jsonify({"error": str(e)}), 500
 
 
-# --- Messaging Endpoints ---
+
+@app.route('/messages', methods=['GET'])
+def get_messages():
+    """Fetches all messages from the Firestore database."""
+    if not db:
+        return jsonify({"error": "Database not connected"}), 500
+    
+    try:
+        messages_ref = db.collection('messages')
+        # Order by sort order if needed, but for now getting all
+        docs = messages_ref.stream()
+        
+        messages = []
+        for doc in docs:
+            msg = doc.to_dict()
+            msg['id'] = doc.id
+            messages.append(msg)
+            
+        # Sort by createdAt desc in Python
+        messages.sort(key=lambda x: x.get('createdAt', ''), reverse=True)
+            
+        return jsonify({"success": True, "messages": messages}), 200
+    except Exception as e:
+        print(f"❌ Error fetching messages: {e}")
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/messages', methods=['POST'])
 def create_message():
@@ -908,101 +932,26 @@ def create_message():
         return jsonify({"error": "Database not connected"}), 500
     
     data = request.get_json()
-    if not data:
-        return jsonify({"error": "No data provided"}), 400
-    
-    # Validate required fields
-    required_fields = ['senderId', 'senderName', 'senderRole', 'recipientType', 'content', 'type', 'priority']
-    for field in required_fields:
-        if field not in data:
-            return jsonify({"error": f"Missing required field: {field}"}), 400
-    
+    if not data or 'content' not in data or 'senderId' not in data:
+        return jsonify({"error": "Missing required message data"}), 400
+        
     try:
-        from datetime import datetime
-        
-        # Create message document
-        message = {
-            'id': data.get('id'),
-            'senderId': data['senderId'],
-            'senderName': data['senderName'],
-            'senderRole': data['senderRole'],
-            'recipientType': data['recipientType'],
-            'recipientId': data.get('recipientId'),
-            'recipientRole': data.get('recipientRole'),
-            'content': data['content'],
-            'type': data['type'],
-            'priority': data['priority'],
-            'createdAt': data.get('createdAt', datetime.utcnow().isoformat()),
-            'readBy': data.get('readBy', [])
-        }
-        
-        # Save to Firestore
         messages_ref = db.collection('messages')
-        doc_ref = messages_ref.document(message['id'])
-        doc_ref.set(message)
         
-        print(f"✅ Message created: {message['id']}")
-        return jsonify({"message": "Message created successfully", "data": message}), 201
+        # Add timestamp if not present
+        if 'createdAt' not in data:
+            from datetime import datetime
+            data['createdAt'] = datetime.now().isoformat()
+            
+        # Create new document with auto-generated ID
+        update_time, message_ref = messages_ref.add(data)
         
+        # Return the created message with ID
+        data['id'] = message_ref.id
+        
+        return jsonify({"success": True, "message": data}), 201
     except Exception as e:
         print(f"❌ Error creating message: {e}")
-        return jsonify({"error": str(e)}), 500
-
-
-@app.route('/messages', methods=['GET'])
-def get_messages():
-    """Fetches all messages from the database."""
-    if not db:
-        return jsonify({"error": "Database not connected"}), 500
-    
-    try:
-        messages_ref = db.collection('messages')
-        
-        # Order by createdAt descending (newest first)
-        docs = messages_ref.order_by('createdAt', direction=firestore.Query.DESCENDING).stream()
-        
-        messages = []
-        for doc in docs:
-            message_data = doc.to_dict()
-            messages.append(message_data)
-        
-        print(f"✅ Retrieved {len(messages)} messages")
-        return jsonify({"messages": messages}), 200
-        
-    except Exception as e:
-        print(f"❌ Error fetching messages: {e}")
-        return jsonify({"error": str(e)}), 500
-
-
-@app.route('/messages/<message_id>/read', methods=['POST'])
-def mark_message_read(message_id):
-    """Marks a message as read by a user."""
-    if not db:
-        return jsonify({"error": "Database not connected"}), 500
-    
-    data = request.get_json()
-    if not data or 'userId' not in data:
-        return jsonify({"error": "Missing userId"}), 400
-    
-    try:
-        message_ref = db.collection('messages').document(message_id)
-        message_doc = message_ref.get()
-        
-        if not message_doc.exists:
-            return jsonify({"error": "Message not found"}), 404
-        
-        message_data = message_doc.to_dict()
-        read_by = message_data.get('readBy', [])
-        
-        if data['userId'] not in read_by:
-            read_by.append(data['userId'])
-            message_ref.update({'readBy': read_by})
-        
-        print(f"✅ Message {message_id} marked as read by {data['userId']}")
-        return jsonify({"message": "Message marked as read"}), 200
-        
-    except Exception as e:
-        print(f"❌ Error marking message as read: {e}")
         return jsonify({"error": str(e)}), 500
 
 
