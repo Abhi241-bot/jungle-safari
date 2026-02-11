@@ -95,11 +95,17 @@ export function MessagingInterface({ language, currentUser }: MessagingInterface
     const fetchMessages = async (showLoading = true) => {
         try {
             if (showLoading) setIsLoading(true);
-            const response = await axios.get(`${API_BASE_URL}/messages`);
+            const response = await axios.get(`${API_BASE_URL}/messages`, {
+                params: {
+                    userId: currentUser.id,
+                    role: currentUser.role
+                }
+            });
             const allMessages = response.data.messages || [];
 
             // Filter messages based on user role and recipient
             const userMessages = allMessages.filter((msg: Message) => {
+                if (msg.senderId === currentUser.id) return true; // Show messages sent by the user
                 if (msg.recipientType === 'everyone') return true;
                 if (msg.recipientType === 'individual' && msg.recipientId === currentUser.id) return true;
                 if (msg.recipientType === 'role' && msg.recipientRole === currentUser.role) return true;

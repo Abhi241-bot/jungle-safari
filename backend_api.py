@@ -718,8 +718,9 @@ def get_messages():
             msg = doc.to_dict()
             msg['id'] = doc.id
             
-            # Filter based on recipient
-            if (msg.get('recipientType') == 'everyone' or
+            # Filter based on recipient or sender
+            if (msg.get('senderId') == user_id or
+                msg.get('recipientType') == 'everyone' or
                 (msg.get('recipientType') == 'individual' and msg.get('recipientId') == user_id) or
                 (msg.get('recipientType') == 'role' and msg.get('recipientRole') == user_role)):
                 all_messages.append(msg)
