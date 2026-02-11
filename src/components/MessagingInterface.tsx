@@ -45,6 +45,10 @@ export function MessagingInterface({ language, currentUser }: MessagingInterface
             minutesAgo: 'minutes ago',
             hoursAgo: 'hours ago',
             daysAgo: 'days ago',
+            admin: 'Admin',
+            vet: 'Vet',
+            zookeeper: 'Zookeeper',
+            officer: 'Officer',
         },
         hi: {
             title: 'संदेश',
@@ -68,6 +72,10 @@ export function MessagingInterface({ language, currentUser }: MessagingInterface
             minutesAgo: 'मिनट पहले',
             hoursAgo: 'घंटे पहले',
             daysAgo: 'दिन पहले',
+            admin: 'एडमिन',
+            vet: 'वेट',
+            zookeeper: 'ज़ूकैपर',
+            officer: 'अधिकारी',
         },
     };
 
@@ -75,11 +83,18 @@ export function MessagingInterface({ language, currentUser }: MessagingInterface
 
     useEffect(() => {
         fetchMessages();
+
+        // Poll for new messages every 5 seconds
+        const intervalId = setInterval(() => {
+            fetchMessages(false); // Don't show loading spinner for background updates
+        }, 5000);
+
+        return () => clearInterval(intervalId);
     }, [currentUser]);
 
-    const fetchMessages = async () => {
+    const fetchMessages = async (showLoading = true) => {
         try {
-            setIsLoading(true);
+            if (showLoading) setIsLoading(true);
             const response = await axios.get(`${API_BASE_URL}/messages`);
             const allMessages = response.data.messages || [];
 
