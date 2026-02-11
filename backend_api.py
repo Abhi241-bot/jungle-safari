@@ -661,42 +661,6 @@ def process_audio_observation():
 
 # ==================== MESSAGES API (Task 4: Communication System) ====================
 
-@app.route('/messages', methods=['POST'])
-def create_message():
-    """Create a new message"""
-    if not db:
-        return jsonify({"error": "Database not connected"}), 500
-    
-    data = request.get_json()
-    if not data or 'content' not in data:
-        return jsonify({"error": "Missing required message data"}), 400
-    
-    try:
-        from datetime import datetime
-        
-        message_data = {
-            'senderId': data.get('senderId'),
-            'senderName': data.get('senderName'),
-            'senderRole': data.get('senderRole'),
-            'recipientType': data.get('recipientType', 'everyone'),
-            'recipientId': data.get('recipientId'),
-            'recipientRole': data.get('recipientRole'),
-            'content': data.get('content'),
-            'type': data.get('type', 'message'),
-            'priority': data.get('priority', 'normal'),
-            'createdAt': datetime.now().isoformat(),
-            'readBy': []
-        }
-        
-        # Add to Firestore
-        doc_ref = db.collection('messages').add(message_data)
-        message_data['id'] = doc_ref[1].id
-        
-        print(f"✅ Message created with ID: {message_data['id']}")
-        return jsonify({"success": True, "message": message_data}), 201
-    except Exception as e:
-        print(f"❌ Error creating message: {e}")
-        return jsonify({"error": str(e)}), 500
 
 @app.route('/messages', methods=['GET'])
 def get_messages():
@@ -901,34 +865,6 @@ def delete_hospital_record(record_id):
 
 
 
-@app.route('/messages', methods=['POST'])
-def create_message():
-    """Creates a new message in the database."""
-    if not db:
-        return jsonify({"error": "Database not connected"}), 500
-    
-    data = request.get_json()
-    if not data or 'content' not in data or 'senderId' not in data:
-        return jsonify({"error": "Missing required message data"}), 400
-        
-    try:
-        messages_ref = db.collection('messages')
-        
-        # Add timestamp if not present
-        if 'createdAt' not in data:
-            from datetime import datetime
-            data['createdAt'] = datetime.now().isoformat()
-            
-        # Create new document with auto-generated ID
-        update_time, message_ref = messages_ref.add(data)
-        
-        # Return the created message with ID
-        data['id'] = message_ref.id
-        
-        return jsonify({"success": True, "message": data}), 201
-    except Exception as e:
-        print(f"❌ Error creating message: {e}")
-        return jsonify({"error": str(e)}), 500
 
 
 if __name__ == '__main__':
