@@ -900,30 +900,6 @@ def delete_hospital_record(record_id):
 
 
 
-@app.route('/messages', methods=['GET'])
-def get_messages():
-    """Fetches all messages from the Firestore database."""
-    if not db:
-        return jsonify({"error": "Database not connected"}), 500
-    
-    try:
-        messages_ref = db.collection('messages')
-        # Order by sort order if needed, but for now getting all
-        docs = messages_ref.stream()
-        
-        messages = []
-        for doc in docs:
-            msg = doc.to_dict()
-            msg['id'] = doc.id
-            messages.append(msg)
-            
-        # Sort by createdAt desc in Python
-        messages.sort(key=lambda x: x.get('createdAt', ''), reverse=True)
-            
-        return jsonify({"success": True, "messages": messages}), 200
-    except Exception as e:
-        print(f"❌ Error fetching messages: {e}")
-        return jsonify({"error": str(e)}), 500
 
 @app.route('/messages', methods=['POST'])
 def create_message():
