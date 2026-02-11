@@ -113,7 +113,9 @@ export function MessageComposer({ language, currentUser, onMessageSent }: Messag
     const fetchUsers = async () => {
         try {
             const response = await axios.get(`${API_BASE_URL}/users`);
-            setUsers(response.data.users || []);
+            // Backend returns a list directly, or verify if it's wrapped
+            const userList = Array.isArray(response.data) ? response.data : (response.data.users || []);
+            setUsers(userList);
         } catch (error) {
             console.error('Failed to fetch users:', error);
             // Fallback to mock users
