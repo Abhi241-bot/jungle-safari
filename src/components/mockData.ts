@@ -96,6 +96,7 @@ export const translations = {
     question13: '6. Staff Status: Was staff attendance complete today?',
     question14: '7. Final Safety: Were all cells, cages, and gates secured before closing?',
     question15: '8. Remarks: Any unusual observation, pending repair, or urgent action required?',
+    question16: '9. Kraal / Night Shelter: Final check of the night shelter condition and security?',
 
   },
   hi: {

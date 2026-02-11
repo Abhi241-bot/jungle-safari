@@ -102,9 +102,22 @@ export function GuidedVoiceRecording({ language, onComplete, onCancel }: GuidedV
         }
     };
 
-    const completeRecording = () => {
+    const completeRecording = async () => {
         // Combine all audio chunks into one blob
-        const finalAudioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+        const currentAnswerBlob = new Blob(audioChunks, { type: 'audio/webm' });
+
+        // Fetch previous answers from blob URLs
+        const previousBlobs = await Promise.all(
+            recordedAnswers.map(async (url) => {
+                const response = await fetch(url);
+                return response.blob();
+            })
+        );
+
+        // Combine all blobs (previous + current)
+        const allBlobs = [...previousBlobs, currentAnswerBlob];
+        const finalAudioBlob = new Blob(allBlobs, { type: 'audio/webm' });
+
         const transcript = `Answered ${totalQuestions} questions via voice recording`;
         onComplete(finalAudioBlob, transcript);
     };
@@ -258,10 +271,10 @@ export function GuidedVoiceRecording({ language, onComplete, onCancel }: GuidedV
                             <div
                                 key={index}
                                 className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${recordedAnswers[index]
-                                        ? 'bg-green-500 text-white'
-                                        : index === currentQuestionIndex
-                                            ? 'bg-blue-500 text-white'
-                                            : 'bg-gray-200 text-gray-600'
+                                    ? 'bg-green-500 text-white'
+                                    : index === currentQuestionIndex
+                                        ? 'bg-blue-500 text-white'
+                                        : 'bg-gray-200 text-gray-600'
                                     }`}
                             >
                                 {index + 1}
