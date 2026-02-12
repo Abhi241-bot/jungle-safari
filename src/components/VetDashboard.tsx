@@ -3,7 +3,7 @@ import { API_BASE_URL } from '../config';
 import axios from 'axios';
 import { AppContext, Animal, Alert as AlertType, Observation } from '../App';
 import { translations } from './mockData';
-import { Bell, Menu, Stethoscope, FileText, Pill, Activity, Settings, AlertTriangle, Home, List, ClipboardList, MessageSquare } from 'lucide-react';
+import { Bell, Menu, Stethoscope, FileText, Pill, Activity, Settings, AlertTriangle, Home, List, ClipboardList, MessageSquare, Package } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
@@ -17,6 +17,7 @@ import { ZookeeperLogsList } from './ZookeeperLogsList';
 import { ZookeeperLogsViewer } from './ZookeeperLogsViewer';
 import { HospitalRecordsList } from './HospitalRecordsList';
 import { MessagingInterface } from './MessagingInterface';
+import { InventoryManagement } from './InventoryManagement';
 
 export function VetDashboard() {
   const { currentUser, language, setCurrentScreen, setSelectedAnimal } = useContext(AppContext);
@@ -34,7 +35,7 @@ export function VetDashboard() {
   const [selectedZookeeperId, setSelectedZookeeperId] = useState<string | null>(null);
   const [selectedZookeeperName, setSelectedZookeeperName] = useState<string>('');
   const [isLogsViewerOpen, setIsLogsViewerOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'logs' | 'messages' | 'records'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'logs' | 'messages' | 'records' | 'inventory'>('dashboard');
 
 
   useEffect(() => {
@@ -216,7 +217,7 @@ export function VetDashboard() {
                                 size="sm"
                                 variant="ghost"
                                 className="h-7 text-xs text-gray-500 hover:bg-gray-200"
-                                onClick={(e) => {
+                                onClick={(e: React.MouseEvent) => {
                                   e.stopPropagation();
                                   handleDismissAlert(alert.id);
                                 }}
@@ -276,6 +277,14 @@ export function VetDashboard() {
             <MessageSquare className="w-4 h-4 mr-2" />
             {language === 'en' ? 'Messages' : 'संदेश'}
           </Button>
+          <Button
+            variant={activeTab === 'inventory' ? 'default' : 'ghost'}
+            className={activeTab === 'inventory' ? 'bg-white text-blue-600' : 'text-white hover:bg-white/20'}
+            onClick={() => setActiveTab('inventory')}
+          >
+            <Package className="w-4 h-4 mr-2" />
+            {language === 'en' ? 'Inventory' : 'इन्वेंटरी'}
+          </Button>
         </div>
 
         <h1 className="text-white">
@@ -285,7 +294,9 @@ export function VetDashboard() {
               ? (language === 'en' ? 'Medical Records' : 'चिकित्सा रिकॉर्ड')
               : activeTab === 'logs'
                 ? (language === 'en' ? 'Zookeeper Logs' : 'चिड़ियाघर कर्मचारी लॉग')
-                : (language === 'en' ? 'Messages' : 'संदेश')
+                : activeTab === 'inventory'
+                  ? (language === 'en' ? 'Inventory' : 'इन्वेंटरी')
+                  : (language === 'en' ? 'Messages' : 'संदेश')
           }
         </h1>
       </div>
@@ -385,7 +396,7 @@ export function VetDashboard() {
                               <Button
                                 size="sm"
                                 className="bg-blue-600 hover:bg-blue-700 h-8"
-                                onClick={(e) => {
+                                onClick={(e: React.MouseEvent) => {
                                   e.stopPropagation();
                                   setCurrentScreen('medication');
                                 }}
@@ -397,7 +408,7 @@ export function VetDashboard() {
                                 size="sm"
                                 variant="outline"
                                 className="border-blue-600 text-blue-600 hover:bg-blue-50 h-8"
-                                onClick={(e) => {
+                                onClick={(e: React.MouseEvent) => {
                                   e.stopPropagation();
                                   setSelectedAnimal(animal);
                                   setCurrentScreen('daily-log');
@@ -499,6 +510,8 @@ export function VetDashboard() {
               onClose={() => setIsLogsViewerOpen(false)}
             />
           </>
+        ) : activeTab === 'inventory' ? (
+          <InventoryManagement />
         ) : (
           // Messages View
           <MessagingInterface
