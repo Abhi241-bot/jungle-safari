@@ -818,17 +818,18 @@ def create_hospital_record():
 
 @app.route('/hospital-records', methods=['GET'])
 def get_hospital_records():
-    """Get hospital records for an animal"""
+    """Get hospital records (all or filtered by animalId query param)"""
     if not db:
         return jsonify({"error": "Database not connected"}), 500
     
     try:
         animal_id = request.args.get('animalId')
         
-        if not animal_id:
-            return jsonify({"error": "Missing animalId parameter"}), 400
+        records_ref = db.collection('hospital_records')
         
-        records_ref = db.collection('hospital_records').where('animalId', '==', animal_id)
+        if animal_id:
+            records_ref = records_ref.where('animalId', '==', animal_id)
+            
         docs = records_ref.stream()
         
         records = []
@@ -838,6 +839,29 @@ def get_hospital_records():
             records.append(record)
         
         # Sort by date (newest first)
+        records.sort(key=lambda x: x.get('date', ''), reverse=True)
+        
+        return jsonify({"records": records}), 200
+    except Exception as e:
+        print(f"❌ Error fetching hospital records: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/hospital-records/animal/<animal_id>', methods=['GET'])
+def get_hospital_records_by_animal(animal_id):
+    """Get hospital records for a specific animal"""
+    if not db:
+        return jsonify({"error": "Database not connected"}), 500
+        
+    try:
+        records_ref = db.collection('hospital_records').where('animalId', '==', animal_id)
+        docs = records_ref.stream()
+        
+        records = []
+        for doc in docs:
+            record = doc.to_dict()
+            record['id'] = doc.id
+            records.append(record)
+            
         records.sort(key=lambda x: x.get('date', ''), reverse=True)
         
         return jsonify({"records": records}), 200
