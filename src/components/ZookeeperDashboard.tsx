@@ -272,7 +272,7 @@ export function ZookeeperDashboard({ schedule }: ZookeeperDashboardProps) {
                                 size="sm"
                                 variant="ghost"
                                 className="h-7 text-xs text-gray-500 hover:bg-gray-200"
-                                onClick={(e) => {
+                                onClick={(e: React.MouseEvent) => {
                                   e.stopPropagation();
                                   handleDismissAlert(alert.id);
                                 }}
@@ -370,20 +370,7 @@ export function ZookeeperDashboard({ schedule }: ZookeeperDashboardProps) {
                       <span className="text-sm">{language === 'en' ? 'SOS Alert' : 'SOS अलर्ट'}</span>
                     </Button>
                   </motion.div>
-                  <motion.div
-                    whileHover={{ scale: 1.05, y: -5 }}
-                    whileTap={{ scale: 0.95 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                  >
-                    <Button
-                      onClick={() => setCurrentScreen('taskManagement')}
-                      variant="outline"
-                      className="w-full h-20 flex flex-col gap-2 border-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all duration-300 hover:shadow-lg"
-                    >
-                      <ClipboardList className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
-                      <span className="text-sm">{language === 'en' ? 'My Tasks' : 'मेरे कार्य'}</span>
-                    </Button>
-                  </motion.div>
+
                 </div>
               </Card>
             </motion.div>
