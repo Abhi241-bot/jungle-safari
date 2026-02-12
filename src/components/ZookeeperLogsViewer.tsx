@@ -9,7 +9,6 @@ import { Input } from './ui/input';
 import { Calendar, Download, ChevronDown, ChevronUp, Filter, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Language } from '../App';
-import { LogDetailsSections } from './LogDetailsSections';
 
 interface LogEntry {
     id: string;
@@ -284,19 +283,20 @@ export function ZookeeperLogsViewer({
                                             {expandedLogId === log.id && (
                                                 <motion.div
                                                     initial={{ height: 0, opacity: 0 }}
-                                                    animate={{ height: 'auto', opacity: 1 }}
+                                                    animate={{ height: "auto", opacity: 1 }}
                                                     exit={{ height: 0, opacity: 0 }}
-                                                    transition={{ duration: 0.2 }}
+                                                    transition={{ duration: 0.3 }}
+                                                    className="overflow-hidden bg-gray-50/50"
                                                 >
                                                     <div className="px-4 pb-4 border-t border-gray-200 pt-4">
                                                         <LogDetailsSections
                                                             log={{
                                                                 ...log,
-                                                                ...log.processedData,
-                                                                // Ensure fallback for legacy fields if needed
+                                                                ...(log.processedData || {}),
+                                                                // Ensure observation text is visible if strict matching fails
                                                                 observationText: log.observations || log.processedData?.observationText || log.processedData?.observation
                                                             }}
-                                                            language={language === 'en' ? 'en' : 'hi'}
+                                                            language={language}
                                                         />
                                                     </div>
                                                 </motion.div>
