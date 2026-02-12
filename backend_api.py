@@ -930,6 +930,123 @@ def delete_hospital_record(record_id):
 
 
 
+@app.route('/logs/by-zookeeper', methods=['GET'])
+def get_logs_by_zookeeper():
+    """Get aggregated logs by zookeeper"""
+    if not db:
+        return jsonify({"error": "Database not connected"}), 500
+    
+    try:
+        # 1. Fetch all Zookeepers first
+        users_ref = db.collection('users').where('role', '==', 'zookeeper')
+        users_docs = users_ref.stream()
+        
+        zookeeper_stats = {}
+        for doc in users_docs:
+            user_data = doc.to_dict()
+            user_id = doc.id
+            zookeeper_stats[user_id] = {
+                'id': user_id,
+                'name': user_data.get('name', 'Unknown'),
+                'todayLogs': 0,
+                'weekLogs': 0,
+                'lastSubmission': None,
+                'assignedAnimals': set(),
+                'morningSubmitted': False,
+                'eveningSubmitted': False
+            }
+
+        # 2. Fetch observations
+        docs = db.collection('observations').order_by('createdAt', direction=firestore.Query.DESCENDING).limit(500).stream()
+        
+        from datetime import datetime, timedelta
+        now = datetime.now()
+        start_of_day = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        start_of_week = start_of_day - timedelta(days=now.weekday())
+        
+        for doc in docs:
+            data = doc.to_dict()
+            user_id = data.get('userId')
+            
+            if not user_id:
+                continue
+            
+            if user_id in zookeeper_stats:
+                stats = zookeeper_stats[user_id]
+                created_at_str = data.get('createdAt')
+                
+                # Update Last Submission
+                if not stats['lastSubmission']:
+                     stats['lastSubmission'] = created_at_str
+                
+                # Parse Date
+                try:
+                    created_at = datetime.fromisoformat(created_at_str.replace('Z', '+00:00'))
+                    
+                    # Check Today
+                    if created_at.replace(tzinfo=None) >= start_of_day:
+                        stats['todayLogs'] += 1
+                        
+                        # Check Morning/Evening
+                        hour = created_at.hour
+                        if 6 <= hour < 12:
+                            stats['morningSubmitted'] = True
+                        elif 16 <= hour < 20:
+                            stats['eveningSubmitted'] = True
+
+                    # Check Week
+                    if created_at.replace(tzinfo=None) >= start_of_week:
+                        stats['weekLogs'] += 1
+                except:
+                    pass
+                
+                # Animals
+                animal_name = data.get('animalName')
+                if animal_name:
+                    stats['assignedAnimals'].add(animal_name)
+        
+        # Format for response
+        result = []
+        for stats in zookeeper_stats.values():
+            stats['assignedAnimals'] = list(stats['assignedAnimals']) # Convert set to list
+            result.append(stats)
+            
+        return jsonify({"zookeepers": result}), 200
+        
+    except Exception as e:
+        print(f"❌ Error aggregating zookeeper logs: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/logs/zookeeper/<user_id>', methods=['GET'])
+def get_zookeeper_logs(user_id):
+    """Get all logs for a specific zookeeper"""
+    if not db:
+        return jsonify({"error": "Database not connected"}), 500
+        
+    try:
+        docs = db.collection('observations').where('userId', '==', user_id).order_by('createdAt', direction=firestore.Query.DESCENDING).stream()
+        
+        logs = []
+        for doc in docs:
+            data = doc.to_dict()
+            logs.append({
+                'id': doc.id,
+                'animalId': data.get('animalId', ''),
+                'animalName': data.get('animalName', 'Unknown'),
+                'submittedAt': data.get('createdAt', ''),
+                'healthStatus': data.get('healthStatus', 'good'),
+                'observations': data.get('observationText', '') or data.get('observation', ''), 
+                'processedData': data,
+                'moodPercentage': data.get('moodPercentage'),
+                'appetitePercentage': data.get('appetitePercentage'),
+                'movementPercentage': data.get('movementPercentage'),
+            })
+            
+        return jsonify({"logs": logs}), 200
+    except Exception as e:
+        print(f"❌ Error fetching zookeeper logs: {e}")
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == '__main__':
     # --- API Key Configuration ---
     # IMPORTANT: Set your API keys as environment variables for security.
