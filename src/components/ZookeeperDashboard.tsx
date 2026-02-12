@@ -375,11 +375,10 @@ export function ZookeeperDashboard({ schedule }: ZookeeperDashboardProps) {
               </Card>
             </motion.div>
 
-            {/* Submission Status */}
-            <motion.div
 
 
-              {/* My Animals Section */}
+
+            {/* My Animals Section */}
             <div>
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-green-900 dark:text-green-100">
