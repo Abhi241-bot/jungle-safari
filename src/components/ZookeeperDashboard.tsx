@@ -17,6 +17,7 @@ import { Loader } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { MessagingInterface } from './MessagingInterface';
+import { useLogDeadlines } from '../hooks/useLogDeadlines';
 
 interface LogSchedule {
   morningSubmitted: boolean;
@@ -43,6 +44,8 @@ export function ZookeeperDashboard({ schedule }: ZookeeperDashboardProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [alerts, setAlerts] = useState<AlertType[]>([]);
   const [error, setError] = useState<string | null>(null);
+
+  useLogDeadlines({ animals, language });
 
 
   useEffect(() => {
