@@ -6,22 +6,32 @@ import { Card } from './ui/card';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import { Calendar, Download, ChevronDown, ChevronUp, Filter, X } from 'lucide-react';
+import { Calendar, Download, ChevronDown, ChevronUp, Filter, X, ImageIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Language } from '../App';
 import { LogDetailsSections } from './LogDetailsSections';
+import { ImageWithFallback } from './figma/ImageWithFallback';
 
 interface LogEntry {
     id: string;
     animalId: string;
-    animalName: string;
+    animalName?: string;
+    animalImage?: string;
     submittedAt: string;
+    createdAt?: string;
     healthStatus: 'excellent' | 'good' | 'fair' | 'poor';
-    observations: string;
-    processedData: any;
+    observations?: string;
+    observationText?: string;
+    processedData?: any;
     moodPercentage?: number;
     appetitePercentage?: number;
     movementPercentage?: number;
+    imageUrl?: string;
+    videoUrl?: string;
+    gateImageUrl?: string;
+
+    // All the detailed fields from the log
+    [key: string]: any;
 }
 
 interface ZookeeperLogsViewerProps {
@@ -103,48 +113,43 @@ export function ZookeeperLogsViewer({
     const fetchLogs = async () => {
         try {
             setIsLoading(true);
-            const response = await axios.get(`${API_BASE_URL}/logs/zookeeper/${zookeeperId}`);
-            setLogs(response.data.logs || []);
+            // Fetch all observations and filter by submittedBy
+            const response = await axios.get(`${API_BASE_URL}/observations`);
+            const allLogs = response.data || [];
+
+            // Filter logs by zookeeper
+            const zookeeperLogs = allLogs.filter((log: any) => log.submittedBy === zookeeperId);
+
+            // Fetch animal details for each log
+            const animalsResponse = await axios.get(`${API_BASE_URL}/animals`);
+            const animals = animalsResponse.data || [];
+
+            // Enrich logs with animal data
+            const enrichedLogs = zookeeperLogs.map((log: any) => {
+                const animal = animals.find((a: any) => a.id === log.animalId);
+                return {
+                    ...log,
+                    animalName: animal?.name || 'Unknown',
+                    animalImage: animal?.image || '',
+                };
+            });
+
+            setLogs(enrichedLogs);
         } catch (err) {
             console.error('Failed to fetch logs:', err);
-            // Fallback to mock data
-            setLogs([
-                {
-                    id: 'log1',
-                    animalId: 'a1',
-                    animalName: 'Tiger #1',
-                    submittedAt: new Date().toISOString(),
-                    healthStatus: 'good',
-                    observations: 'Animal is active and eating well. No signs of distress.',
-                    processedData: {},
-                    moodPercentage: 75,
-                    appetitePercentage: 80,
-                    movementPercentage: 70,
-                },
-                {
-                    id: 'log2',
-                    animalId: 'a2',
-                    animalName: 'Lion #2',
-                    submittedAt: new Date(Date.now() - 3600000).toISOString(),
-                    healthStatus: 'excellent',
-                    observations: 'Very healthy, playful behavior observed.',
-                    processedData: {},
-                    moodPercentage: 90,
-                    appetitePercentage: 95,
-                    movementPercentage: 85,
-                },
-            ]);
+            setLogs([]);
         } finally {
             setIsLoading(false);
         }
     };
 
     const filteredLogs = logs.filter((log) => {
-        const matchesDate = dateFilter
-            ? new Date(log.submittedAt).toLocaleDateString() === new Date(dateFilter).toLocaleDateString()
-            : true;
+        const logDate = log.submittedAt || log.createdAt || '';
+        const matchesDate = dateFilter && logDate
+            ? new Date(logDate).toLocaleDateString() === new Date(dateFilter).toLocaleDateString()
+            : !dateFilter;
         const matchesAnimal = animalFilter
-            ? log.animalName.toLowerCase().includes(animalFilter.toLowerCase())
+            ? (log.animalName || '').toLowerCase().includes(animalFilter.toLowerCase())
             : true;
         return matchesDate && matchesAnimal;
     });
@@ -179,14 +184,19 @@ export function ZookeeperLogsViewer({
         }
     };
 
+    const getMoodColor = (value: number) => {
+        if (value >= 75) return 'bg-green-100 text-green-700';
+        if (value >= 50) return 'bg-yellow-100 text-yellow-700';
+        return 'bg-red-100 text-red-700';
+    };
+
     const handleExportPDF = () => {
-        // TODO: Implement PDF export
         console.log('Exporting logs to PDF...');
     };
 
     return (
         <Sheet open={isOpen} onOpenChange={onClose}>
-            <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto">
+            <SheetContent side="right" className="w-full sm:max-w-3xl overflow-y-auto">
                 <SheetHeader>
                     <SheetTitle className="text-green-900">
                         {zookeeperName} - {text.title}
@@ -258,25 +268,61 @@ export function ZookeeperLogsViewer({
                                             className="p-4 cursor-pointer hover:bg-gray-50 transition-colors"
                                             onClick={() => setExpandedLogId(expandedLogId === log.id ? null : log.id)}
                                         >
-                                            <div className="flex items-start justify-between">
-                                                <div className="flex-1">
-                                                    <div className="flex items-center gap-2 mb-2">
-                                                        <h4 className="font-semibold text-gray-900">{log.animalName}</h4>
-                                                        <Badge className={`${getHealthColor(log.healthStatus)} text-white text-xs`}>
-                                                            {getHealthText(log.healthStatus)}
-                                                        </Badge>
+                                            <div className="flex gap-4">
+                                                {/* Animal Image */}
+                                                {log.animalImage && (
+                                                    <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
+                                                        <ImageWithFallback
+                                                            src={log.animalImage}
+                                                            alt={log.animalName || 'Animal'}
+                                                            className="w-full h-full object-cover"
+                                                        />
                                                     </div>
-                                                    <p className="text-sm text-gray-600">
-                                                        {text.submittedAt}: {new Date(log.submittedAt).toLocaleString(language === 'en' ? 'en-US' : 'hi-IN')}
-                                                    </p>
+                                                )}
+
+                                                <div className="flex-1">
+                                                    <div className="flex items-start justify-between">
+                                                        <div className="flex-1">
+                                                            <div className="flex items-center gap-2 mb-2">
+                                                                <h4 className="font-semibold text-gray-900">{log.animalName}</h4>
+                                                                <Badge className={`${getHealthColor(log.healthStatus)} text-white text-xs`}>
+                                                                    {getHealthText(log.healthStatus)}
+                                                                </Badge>
+                                                            </div>
+                                                            <p className="text-sm text-gray-600">
+                                                                {text.submittedAt}: {new Date(log.submittedAt || log.createdAt || Date.now()).toLocaleString(language === 'en' ? 'en-US' : 'hi-IN')}
+                                                            </p>
+
+                                                            {/* Mood/Appetite/Movement indicators */}
+                                                            {(log.moodPercentage || log.appetitePercentage || log.movementPercentage) && (
+                                                                <div className="flex gap-2 mt-2">
+                                                                    {log.moodPercentage !== undefined && (
+                                                                        <div className={`px-2 py-1 rounded text-xs ${getMoodColor(log.moodPercentage)}`}>
+                                                                            {text.mood}: {log.moodPercentage}%
+                                                                        </div>
+                                                                    )}
+                                                                    {log.appetitePercentage !== undefined && (
+                                                                        <div className={`px-2 py-1 rounded text-xs ${getMoodColor(log.appetitePercentage)}`}>
+                                                                            {text.appetite}: {log.appetitePercentage}%
+                                                                        </div>
+                                                                    )}
+                                                                    {log.movementPercentage !== undefined && (
+                                                                        <div className={`px-2 py-1 rounded text-xs ${getMoodColor(log.movementPercentage)}`}>
+                                                                            {text.movement}: {log.movementPercentage}%
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        <Button variant="ghost" size="icon">
+                                                            {expandedLogId === log.id ? (
+                                                                <ChevronUp className="w-5 h-5" />
+                                                            ) : (
+                                                                <ChevronDown className="w-5 h-5" />
+                                                            )}
+                                                        </Button>
+                                                    </div>
                                                 </div>
-                                                <Button variant="ghost" size="icon">
-                                                    {expandedLogId === log.id ? (
-                                                        <ChevronUp className="w-5 h-5" />
-                                                    ) : (
-                                                        <ChevronDown className="w-5 h-5" />
-                                                    )}
-                                                </Button>
                                             </div>
                                         </div>
 
@@ -290,15 +336,40 @@ export function ZookeeperLogsViewer({
                                                     className="overflow-hidden bg-gray-50/50"
                                                 >
                                                     <div className="px-4 pb-4 border-t border-gray-200 pt-4">
+                                                        {/* Display full log details using LogDetailsSections */}
                                                         <LogDetailsSections
-                                                            log={{
-                                                                ...log,
-                                                                ...(log.processedData || {}),
-                                                                // Ensure observation text is visible if strict matching fails
-                                                                observationText: log.observations || log.processedData?.observationText || log.processedData?.observation
-                                                            }}
+                                                            log={log}
                                                             language={language}
                                                         />
+
+                                                        {/* Image Preview */}
+                                                        {(log.imageUrl || log.gateImageUrl) && (
+                                                            <div className="mt-4 flex gap-2 flex-wrap">
+                                                                {log.imageUrl && (
+                                                                    <div>
+                                                                        <p className="text-xs text-gray-500 mb-1">
+                                                                            {language === 'en' ? 'Animal Photo' : 'जानवर की फोटो'}
+                                                                        </p>
+                                                                        <img src={log.imageUrl} alt="Animal" className="rounded-lg max-h-40" />
+                                                                    </div>
+                                                                )}
+                                                                {log.gateImageUrl && (
+                                                                    <div>
+                                                                        <p className="text-xs text-gray-500 mb-1">
+                                                                            {language === 'en' ? 'Gate Lock Photo' : 'गेट लॉक फोटो'}
+                                                                        </p>
+                                                                        <img src={log.gateImageUrl} alt="Gate Lock" className="rounded-lg max-h-40" />
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        )}
+
+                                                        {/* Video Preview */}
+                                                        {log.videoUrl && (
+                                                            <div className="mt-4">
+                                                                <video src={log.videoUrl} controls className="rounded-lg max-h-60 w-full" />
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </motion.div>
                                             )}
