@@ -479,7 +479,7 @@ export function VetDashboard() {
             </Tabs>
           </>
         ) : activeTab === 'records' ? (
-          <HospitalRecordsList language={language} canEdit={true} />
+          <HospitalRecordsList language={language} canEdit={true} animals={animals} />
         ) : activeTab === 'logs' ? (
           // Logs View
           <>

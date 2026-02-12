@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { API_BASE_URL } from '../config';
 import axios from 'axios';
-import { AppContext, Language } from '../App';
+import { AppContext, Language, Animal } from '../App';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -9,7 +9,7 @@ import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { toast } from 'sonner';
-import { Calendar, FileText, TestTube, Pill, MessageSquare } from 'lucide-react';
+import { Calendar, FileText, TestTube, Pill, MessageSquare, PawPrint } from 'lucide-react';
 
 export interface HospitalRecord {
     id: string;
@@ -28,8 +28,9 @@ export interface HospitalRecord {
 }
 
 interface HospitalRecordFormProps {
-    animalId: string;
-    animalName: string;
+    animalId?: string;
+    animalName?: string;
+    animals?: Animal[];
     existingRecord?: HospitalRecord;
     language: Language;
     isOpen: boolean;
@@ -40,6 +41,7 @@ interface HospitalRecordFormProps {
 export function HospitalRecordForm({
     animalId,
     animalName,
+    animals,
     existingRecord,
     language,
     isOpen,
@@ -55,12 +57,14 @@ export function HospitalRecordForm({
     const [status, setStatus] = useState<'ongoing' | 'completed' | 'follow-up'>(
         existingRecord?.status || 'ongoing'
     );
+    const [selectedAnimalId, setSelectedAnimalId] = useState<string>(existingRecord?.animalId || animalId || '');
     const [isSaving, setIsSaving] = useState(false);
 
     const t = {
         en: {
             title: existingRecord ? 'Edit Hospital Record' : 'New Hospital Record',
             description: 'Record medical observations and treatment details',
+            selectAnimal: 'Select Animal',
             date: 'Date',
             observation: 'Observation',
             observationPlaceholder: 'Describe the animal\'s condition, symptoms, behavior...',
@@ -78,12 +82,14 @@ export function HospitalRecordForm({
             save: 'Save Record',
             saving: 'Saving...',
             required: 'This field is required',
+            animalRequired: 'Please select an animal',
             success: 'Hospital record saved successfully',
             error: 'Failed to save hospital record',
         },
         hi: {
             title: existingRecord ? 'अस्पताल रिकॉर्ड संपादित करें' : 'नया अस्पताल रिकॉर्ड',
             description: 'चिकित्सा अवलोकन और उपचार विवरण रिकॉर्ड करें',
+            selectAnimal: 'जानवर चुनें',
             date: 'तारीख',
             observation: 'अवलोकन',
             observationPlaceholder: 'जानवर की स्थिति, लक्षण, व्यवहार का वर्णन करें...',
@@ -101,6 +107,7 @@ export function HospitalRecordForm({
             save: 'रिकॉर्ड सहेजें',
             saving: 'सहेजा जा रहा है...',
             required: 'यह फ़ील्ड आवश्यक है',
+            animalRequired: 'कृपया एक जानवर चुनें',
             success: 'अस्पताल रिकॉर्ड सफलतापूर्वक सहेजा गया',
             error: 'अस्पताल रिकॉर्ड सहेजने में विफल',
         },
@@ -116,11 +123,20 @@ export function HospitalRecordForm({
             setDosage(existingRecord.dosage);
             setRemarks(existingRecord.remarks);
             setStatus(existingRecord.status);
+            setSelectedAnimalId(existingRecord.animalId);
+        } else if (animalId) {
+            setSelectedAnimalId(animalId);
+        } else {
+            setSelectedAnimalId('');
         }
-    }, [existingRecord]);
+    }, [existingRecord, animalId, isOpen]);
 
     const handleSave = async () => {
         // Validation
+        if (!selectedAnimalId) {
+            toast.error(text.animalRequired);
+            return;
+        }
         if (!observation.trim()) {
             toast.error(text.required);
             return;
@@ -128,10 +144,16 @@ export function HospitalRecordForm({
 
         setIsSaving(true);
 
+        let currentAnimalName = animalName;
+        if (!currentAnimalName && animals) {
+            const animal = animals.find(a => a.id === selectedAnimalId);
+            currentAnimalName = animal ? animal.name : 'Unknown';
+        }
+
         const record: HospitalRecord = {
             id: existingRecord?.id || `hr_${Date.now()}`,
-            animalId,
-            animalName,
+            animalId: selectedAnimalId,
+            animalName: currentAnimalName || '',
             vetId: currentUser?.id || '',
             vetName: currentUser?.name || '',
             date,
@@ -175,6 +197,7 @@ export function HospitalRecordForm({
         setDosage('');
         setRemarks('');
         setStatus('ongoing');
+        if (!animalId) setSelectedAnimalId('');
         onClose();
     };
 
@@ -184,11 +207,34 @@ export function HospitalRecordForm({
                 <DialogHeader>
                     <DialogTitle className="text-blue-900">{text.title}</DialogTitle>
                     <DialogDescription>
-                        {text.description} - <span className="font-semibold">{animalName}</span>
+                        {text.description}
+                        {animalName && <> - <span className="font-semibold">{animalName}</span></>}
                     </DialogDescription>
                 </DialogHeader>
 
                 <div className="space-y-4 py-4">
+                    {/* Animal Selection (if not provided) */}
+                    {!animalId && animals && (
+                        <div>
+                            <Label className="flex items-center gap-2">
+                                <PawPrint className="w-4 h-4" />
+                                {text.selectAnimal} <span className="text-red-500">*</span>
+                            </Label>
+                            <Select value={selectedAnimalId} onValueChange={setSelectedAnimalId}>
+                                <SelectTrigger className="mt-1">
+                                    <SelectValue placeholder={text.selectAnimal} />
+                                </SelectTrigger>
+                                <SelectContent className="max-h-[200px]">
+                                    {animals.map(animal => (
+                                        <SelectItem key={animal.id} value={animal.id}>
+                                            {animal.name} ({animal.species})
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    )}
+
                     {/* Date */}
                     <div>
                         <Label className="flex items-center gap-2">

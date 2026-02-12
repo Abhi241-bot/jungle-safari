@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { API_BASE_URL } from '../config';
 import axios from 'axios';
-import { AppContext, Language } from '../App';
+import { AppContext, Language, Animal } from '../App';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { ChevronDown, ChevronUp, Edit, Trash2, Download, Calendar, User } from 'lucide-react';
+import { ChevronDown, ChevronUp, Edit, Trash2, Download, Calendar, User, PawPrint } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { HospitalRecord, HospitalRecordForm } from './HospitalRecordForm';
 import { toast } from 'sonner';
@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 interface HospitalRecordsListProps {
     animalId?: string;
     animalName?: string;
+    animals?: Animal[];
     language: Language;
     canEdit: boolean; // Only Vets can edit
 }
@@ -22,6 +23,7 @@ interface HospitalRecordsListProps {
 export function HospitalRecordsList({
     animalId,
     animalName,
+    animals,
     language,
     canEdit,
 }: HospitalRecordsListProps) {
@@ -206,13 +208,7 @@ export function HospitalRecordsList({
     };
 
     const handleSave = (record: HospitalRecord) => {
-        if (editingRecord) {
-            // Update existing record
-            setRecords(records.map((r) => (r.id === record.id ? record : r)));
-        } else {
-            // Add new record
-            setRecords([record, ...records]);
-        }
+        fetchRecords(); // Refresh list to get new record with correct data
         setEditingRecord(undefined);
     };
 
@@ -233,7 +229,7 @@ export function HospitalRecordsList({
             {/* Header */}
             <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-gray-900">{text.title}</h3>
-                {canEdit && animalId && (
+                {canEdit && (
                     <Button
                         onClick={() => {
                             setEditingRecord(undefined);
@@ -301,7 +297,7 @@ export function HospitalRecordsList({
                                                 </Badge>
                                                 {!animalId && (
                                                     <span className="text-sm font-medium text-blue-800 bg-blue-50 px-2 py-0.5 rounded flex items-center gap-1">
-                                                        <User className="w-3 h-3" />
+                                                        <PawPrint className="w-3 h-3" />
                                                         {record.animalName}
                                                     </span>
                                                 )}
@@ -404,6 +400,7 @@ export function HospitalRecordsList({
             <HospitalRecordForm
                 animalId={animalId}
                 animalName={animalName}
+                animals={animals}
                 existingRecord={editingRecord}
                 language={language}
                 isOpen={isFormOpen}
