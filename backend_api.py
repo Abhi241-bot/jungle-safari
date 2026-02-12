@@ -605,12 +605,19 @@ def process_text_observation():
             # Update Animal's lastChecked field
             if animal_id:
                 try:
-                    db.collection('animals').document(animal_id).update({
-                        'lastChecked': datetime.now().isoformat()
-                    })
-                    print(f"✅ Updated lastChecked for animal {animal_id}")
+                    now = datetime.now()
+                    update_data = {'lastChecked': now.isoformat()}
+                    
+                    if now.hour < 14:
+                        update_data['lastMorningCheck'] = now.isoformat()
+                        print(f"✅ Updated Morning Check for animal {animal_id}")
+                    else:
+                        update_data['lastEveningCheck'] = now.isoformat()
+                        print(f"✅ Updated Evening Check for animal {animal_id}")
+
+                    db.collection('animals').document(animal_id).update(update_data)
                 except Exception as update_e:
-                    print(f"⚠️ Failed to update animal lastChecked: {update_e}")
+                    print(f"⚠️ Failed to update animal stamps: {update_e}")
 
         return jsonify(data), 200
     except Exception as e:
@@ -690,12 +697,19 @@ def process_audio_observation():
             # Update Animal's lastChecked field
             if animal_id:
                 try:
-                    db.collection('animals').document(animal_id).update({
-                        'lastChecked': datetime.now().isoformat()
-                    })
-                    print(f"✅ Updated lastChecked for animal {animal_id} (Audio Log)")
+                    now = datetime.now()
+                    update_data = {'lastChecked': now.isoformat()}
+                    
+                    if now.hour < 14:
+                        update_data['lastMorningCheck'] = now.isoformat()
+                        print(f"✅ Updated Morning Check for animal {animal_id} (Audio)")
+                    else:
+                        update_data['lastEveningCheck'] = now.isoformat()
+                        print(f"✅ Updated Evening Check for animal {animal_id} (Audio)")
+
+                    db.collection('animals').document(animal_id).update(update_data)
                 except Exception as update_e:
-                    print(f"⚠️ Failed to update animal lastChecked: {update_e}")
+                    print(f"⚠️ Failed to update animal stamps: {update_e}")
 
         return jsonify(data_dict), 200
     except Exception as e:

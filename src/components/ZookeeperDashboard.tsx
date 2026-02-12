@@ -15,7 +15,7 @@ import { ImageWithFallback } from './figma/ImageWithFallback';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet';
 import { Loader } from 'lucide-react';
 import { toast } from 'sonner';
-import { SubmissionStatus } from './SubmissionStatus';
+
 import { MessagingInterface } from './MessagingInterface';
 
 interface LogSchedule {
@@ -377,18 +377,9 @@ export function ZookeeperDashboard({ schedule }: ZookeeperDashboardProps) {
 
             {/* Submission Status */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-            >
-              <SubmissionStatus
-                morningSubmitted={schedule.morningSubmitted}
-                eveningSubmitted={schedule.eveningSubmitted}
-                language={language}
-              />
-            </motion.div>
 
-            {/* My Animals Section */}
+
+              {/* My Animals Section */}
             <div>
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-green-900 dark:text-green-100">

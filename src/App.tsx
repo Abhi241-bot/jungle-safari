@@ -35,6 +35,8 @@ export interface Animal {
   notes?: string;
   enclosure?: string;
   lastFed?: string;
+  lastMorningCheck?: string;
+  lastEveningCheck?: string;
 }
 
 export interface User {

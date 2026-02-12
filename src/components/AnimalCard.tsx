@@ -41,9 +41,9 @@ export function AnimalCard({ animal }: AnimalCardProps) {
   };
 
   // Check if log is submitted today
-  const lastCheckedDate = new Date(animal.lastChecked);
-  const today = new Date();
-  const isCheckedToday = lastCheckedDate.toDateString() === today.toDateString();
+  const today = new Date().toDateString();
+  const isMorningDone = animal.lastMorningCheck ? new Date(animal.lastMorningCheck).toDateString() === today : false;
+  const isEveningDone = animal.lastEveningCheck ? new Date(animal.lastEveningCheck).toDateString() === today : false;
 
   return (
     <motion.div
@@ -93,18 +93,18 @@ export function AnimalCard({ animal }: AnimalCardProps) {
               </Badge>
             </div>
 
-            <div className={`flex items-center gap-2 mb-3 text-sm ${isCheckedToday ? 'text-green-600 font-medium' : 'text-gray-500'}`}>
-              {isCheckedToday ? (
-                <>
-                  <CheckCircle className="w-4 h-4" />
-                  <span>{language === 'en' ? 'Logged Today' : 'लॉग भरा गया'}</span>
-                </>
-              ) : (
-                <>
-                  <Clock className="w-4 h-4" />
-                  <span>{language === 'en' ? 'Pending Today' : 'आज लंबित'}</span>
-                </>
-              )}
+            <div className="flex flex-col gap-1.5 mb-3 text-xs">
+              {/* Morning Status */}
+              <div className={`flex items-center gap-2 ${isMorningDone ? 'text-green-600 font-medium' : 'text-amber-600'}`}>
+                {isMorningDone ? <CheckCircle className="w-3.5 h-3.5" /> : <Clock className="w-3.5 h-3.5" />}
+                <span>{(t as any).morningLog}: {isMorningDone ? (language === 'en' ? 'Done' : 'पूरा हुआ') : (language === 'en' ? 'Pending' : 'लंबित')}</span>
+              </div>
+
+              {/* Evening Status */}
+              <div className={`flex items-center gap-2 ${isEveningDone ? 'text-green-600 font-medium' : 'text-amber-600'}`}>
+                {isEveningDone ? <CheckCircle className="w-3.5 h-3.5" /> : <Clock className="w-3.5 h-3.5" />}
+                <span>{(t as any).eveningLog}: {isEveningDone ? (language === 'en' ? 'Done' : 'पूरा हुआ') : (language === 'en' ? 'Pending' : 'लंबित')}</span>
+              </div>
             </div>
 
             {/* Action Buttons */}
