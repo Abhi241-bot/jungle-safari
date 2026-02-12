@@ -556,6 +556,29 @@ def process_text_observation():
         # Preserve the original observation text (AI model doesn't return this)
         data['observationText'] = original_observation_text
 
+        # --- Automatic Sharing with Admins and Vets ---
+        try:
+            # key: sharedWith is a list of user IDs
+            if 'sharedWith' not in data:
+                data['sharedWith'] = []
+            
+            # Fetch admins and vets
+            # Note: In a large system, you might cache this or do it differently.
+            admins = db.collection('users').where('role', '==', 'admin').stream()
+            vets = db.collection('users').where('role', '==', 'vet').stream()
+            
+            for user in admins:
+                if user.id not in data['sharedWith']:
+                    data['sharedWith'].append(user.id)
+            
+            for user in vets:
+                if user.id not in data['sharedWith']:
+                    data['sharedWith'].append(user.id)
+                    
+            print(f"✅ Automatically shared log with {len(data['sharedWith'])} recipients (Admins/Vets).")
+        except Exception as share_e:
+            print(f"⚠️ Failed to auto-share log: {share_e}")
+
         # --- Automatic Alert Generation ---
         # If health status is 'poor', create a high-priority alert
         if data.get('healthStatus') == 'poor' and db:

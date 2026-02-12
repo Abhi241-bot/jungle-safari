@@ -3,7 +3,7 @@ import { API_BASE_URL } from '../config';
 import axios from 'axios';
 import { AppContext, User as AppUser } from '../App';
 import { mockAnimals, translations } from './mockData';
-import { ArrowLeft, Send, Loader, AlertTriangle, Server, Mic, Square, Play, Trash2, FileText, HeartPulse, Camera, Video, Share2, Smile, Meh, Frown, Angry, User } from 'lucide-react';
+import { ArrowLeft, Send, Loader, AlertTriangle, Server, Mic, Square, Play, Trash2, FileText, HeartPulse, Camera, Video, Smile, Meh, Frown, Angry } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { Textarea } from './ui/textarea';
@@ -12,7 +12,6 @@ import { toast } from 'sonner';
 import { Input } from './ui/input';
 import { useReactMediaRecorder } from 'react-media-recorder';
 import { motion } from 'motion/react';
-import { Checkbox } from './ui/checkbox';
 import { GuidedVoiceRecording } from './GuidedVoiceRecording';
 
 // Define the structure of the data returned from the API
@@ -319,7 +318,7 @@ export function DailyLogEntry({ onLogSubmitted }: DailyLogEntryProps = {}) {
                 onClick={() => setHealthStatus(option.status as any)}
               >
                 <option.icon className={`w-7 h-7 ${healthStatus !== option.status ? option.color : ''}`} />
-                <span className="text-xs capitalize">{t[option.status]}</span>
+                <span className="text-xs capitalize">{t[option.status as keyof typeof t]}</span>
               </Button>
             ))}
           </div>
@@ -478,96 +477,6 @@ export function DailyLogEntry({ onLogSubmitted }: DailyLogEntryProps = {}) {
           </div>
         </Card>
 
-        {/* Sharing Options */}
-        <Card className="p-4 bg-white shadow-md">
-          <Label className="flex items-center gap-2 text-gray-700 mb-2">
-            <Share2 className="w-5 h-5" /> {t.shareWith}
-          </Label>
-          <p className="text-sm text-gray-500 mb-3">{t.selectUsersToShare}</p>
-
-          <div className="space-y-4">
-            {/* Zookeepers */}
-            <div>
-              <h4 className="font-semibold text-gray-700 mb-2">{t.zookeepers} ({getUsersByRole('zookeeper').filter(u => selectedUsersToShare.includes(u.id.toString())).length} / {getUsersByRole('zookeeper').length})</h4>
-              <div className="grid grid-cols-2 gap-2">
-                {getUsersByRole('zookeeper').map(user => (
-                  <div key={user.id} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`share-zookeeper-${user.id}`}
-                      checked={selectedUsersToShare.includes(user.id.toString())}
-                      onCheckedChange={() => handleShareUserToggle(user.id.toString())}
-                      disabled={isLoading}
-                    />
-                    <Label htmlFor={`share-zookeeper-${user.id}`} className="cursor-pointer flex items-center gap-1">
-                      <User className="w-4 h-4" /> {user.name} <span className="text-xs text-gray-500">({t[user.role]})</span>
-                    </Label>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Vet Doctors */}
-            <div>
-              <h4 className="font-semibold text-gray-700 mb-2">{t.vetDoctors} ({getUsersByRole('vet').filter(u => selectedUsersToShare.includes(u.id.toString())).length} / {getUsersByRole('vet').length})</h4>
-              <div className="grid grid-cols-2 gap-2">
-                {getUsersByRole('vet').map(user => (
-                  <div key={user.id} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`share-vet-${user.id}`}
-                      checked={selectedUsersToShare.includes(user.id.toString())}
-                      onCheckedChange={() => handleShareUserToggle(user.id.toString())}
-                      disabled={isLoading}
-                    />
-                    <Label htmlFor={`share-vet-${user.id}`} className="cursor-pointer flex items-center gap-1">
-                      <User className="w-4 h-4" /> {user.name} <span className="text-xs text-gray-500">({t[user.role]})</span>
-                    </Label>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Admins */}
-            <div>
-              <h4 className="font-semibold text-gray-700 mb-2">{t.admins} ({getUsersByRole('admin').filter(u => selectedUsersToShare.includes(u.id.toString())).length} / {getUsersByRole('admin').length})</h4>
-              <div className="grid grid-cols-2 gap-2">
-                {getUsersByRole('admin').map(user => (
-                  <div key={user.id} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`share-admin-${user.id}`}
-                      checked={selectedUsersToShare.includes(user.id.toString())}
-                      onCheckedChange={() => handleShareUserToggle(user.id.toString())}
-                      disabled={isLoading}
-                    />
-                    <Label htmlFor={`share-admin-${user.id}`} className="cursor-pointer flex items-center gap-1">
-                      <User className="w-4 h-4" /> {user.name} <span className="text-xs text-gray-500">({t[user.role]})</span>
-                    </Label>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Forest Officers */}
-            <div>
-              <h4 className="font-semibold text-gray-700 mb-2">{t.forestOfficers} ({getUsersByRole('officer').filter(u => selectedUsersToShare.includes(u.id.toString())).length} / {getUsersByRole('officer').length})</h4>
-              <div className="grid grid-cols-2 gap-2">
-                {getUsersByRole('officer').map(user => (
-                  <div key={user.id} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`share-officer-${user.id}`}
-                      checked={selectedUsersToShare.includes(user.id.toString())}
-                      onCheckedChange={() => handleShareUserToggle(user.id.toString())}
-                      disabled={isLoading}
-                    />
-                    <Label htmlFor={`share-officer-${user.id}`} className="cursor-pointer flex items-center gap-1">
-                      <User className="w-4 h-4" /> {user.name} <span className="text-xs text-gray-500">({t[user.role]})</span>
-                    </Label>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </Card>
-
         {/* Submit Button */}
         <Button
           onClick={handleSubmitLog}
@@ -575,7 +484,7 @@ export function DailyLogEntry({ onLogSubmitted }: DailyLogEntryProps = {}) {
           className="w-full mt-4 h-14 bg-gradient-to-r from-emerald-600 to-green-600 text-white text-lg"
         >
           {isLoading ? <Loader className="animate-spin mr-2" /> : <Send className="mr-2" />}
-          {isLoading ? t.processing : t.submitFullLog}
+          {isLoading ? t.processing : (t as any).submitFullLog}
         </Button>
 
         {/* Results Section */}

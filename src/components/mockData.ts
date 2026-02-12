@@ -53,6 +53,7 @@ export const translations = {
     injuriesReport: 'Injuries / Report',
     enterInjuries: 'Enter any injuries or specific observations...',
     submitVoiceLog: 'Submit Voice Log',
+    submitFullLog: 'Submit Full Log',
     excellent: 'Excellent',
     good: 'Good',
     fair: 'Fair',
