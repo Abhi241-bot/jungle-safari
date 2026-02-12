@@ -9,6 +9,7 @@ import { Input } from './ui/input';
 import { Calendar, Download, ChevronDown, ChevronUp, Filter, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Language } from '../App';
+import { LogDetailsSections } from './LogDetailsSections';
 
 interface LogEntry {
     id: string;
