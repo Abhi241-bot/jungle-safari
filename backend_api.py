@@ -656,6 +656,8 @@ def process_audio_observation():
     content_type = audio_file.mimetype # Get the actual mimetype
     prefix = request.form.get('prefix', '') # Get optional prefix
     animal_id = request.form.get('animalId', '')
+    submitted_by = request.form.get('submittedBy', '')  # Get submitter ID
+    submitted_by_name = request.form.get('submittedByName', '')  # Get submitter name
 
     if not date:
         return jsonify({"error": "Missing 'date' in request form data"}), 400
@@ -687,6 +689,12 @@ def process_audio_observation():
         # Add the raw transcribed text to the response so frontend can display it
         data_dict['transcribedText'] = transcribed_text
         data_dict['fullObservationText'] = prefix + transcribed_text
+        
+        # Add submitter information
+        if submitted_by:
+            data_dict['submittedBy'] = submitted_by
+        if submitted_by_name:
+            data_dict['submittedByName'] = submitted_by_name
 
         # Save to Firestore if the client is available
         if db:

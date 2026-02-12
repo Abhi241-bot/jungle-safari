@@ -103,6 +103,8 @@ export function DailyLogEntry({ onLogSubmitted }: DailyLogEntryProps = {}) {
     formData.append('date', new Date().toISOString());
     formData.append('prefix', prefix); // Send the slider data as a prefix
     formData.append('animalId', selectedAnimal?.id || ''); // Add animalId
+    formData.append('submittedBy', currentUser?.id || ''); // Add submitter ID
+    formData.append('submittedByName', currentUser?.name || ''); // Add submitter name
 
     try {
       const response = await axios.post(`${API_BASE_URL}/process_audio_observation`, formData);
@@ -136,6 +138,8 @@ export function DailyLogEntry({ onLogSubmitted }: DailyLogEntryProps = {}) {
     formData.append('date', new Date().toISOString());
     formData.append('prefix', 'Comprehensive zoo inspection log - Section A (Animal Health) and Enclosure Report: ');
     formData.append('animalId', selectedAnimal?.id || '');
+    formData.append('submittedBy', currentUser?.id || ''); // Add submitter ID
+    formData.append('submittedByName', currentUser?.name || ''); // Add submitter name
 
     try {
       const response = await axios.post(`${API_BASE_URL}/process_audio_observation`, formData);
@@ -209,7 +213,8 @@ export function DailyLogEntry({ onLogSubmitted }: DailyLogEntryProps = {}) {
       // Create the complete payload for the backend
       const payload = {
         animalId: selectedAnimal?.id,
-        submittedBy: currentUser?.name,
+        submittedBy: currentUser?.id, // Use ID for filtering
+        submittedByName: currentUser?.name, // Keep name for display
         createdAt: new Date().toISOString(),
         healthStatus: healthStatus,
         moodPercentage: moodPercentage,
