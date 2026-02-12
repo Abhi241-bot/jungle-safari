@@ -34,7 +34,7 @@ export function VetDashboard() {
   const [selectedZookeeperId, setSelectedZookeeperId] = useState<string | null>(null);
   const [selectedZookeeperName, setSelectedZookeeperName] = useState<string>('');
   const [isLogsViewerOpen, setIsLogsViewerOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'logs' | 'messages'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'logs' | 'messages' | 'records'>('dashboard');
 
 
   useEffect(() => {
@@ -253,6 +253,14 @@ export function VetDashboard() {
             {language === 'en' ? 'Dashboard' : 'डैशबोर्ड'}
           </Button>
           <Button
+            variant={activeTab === 'records' ? 'default' : 'ghost'}
+            className={activeTab === 'records' ? 'bg-white text-blue-600' : 'text-white hover:bg-white/20'}
+            onClick={() => setActiveTab('records')}
+          >
+            <FileText className="w-4 h-4 mr-2" />
+            {language === 'en' ? 'Medical Records' : 'चिकित्सा रिकॉर्ड'}
+          </Button>
+          <Button
             variant={activeTab === 'logs' ? 'default' : 'ghost'}
             className={activeTab === 'logs' ? 'bg-white text-blue-600' : 'text-white hover:bg-white/20'}
             onClick={() => setActiveTab('logs')}
@@ -273,9 +281,11 @@ export function VetDashboard() {
         <h1 className="text-white">
           {activeTab === 'dashboard'
             ? (language === 'en' ? 'Health Dashboard' : 'स्वास्थ्य डैशबोर्ड')
-            : activeTab === 'logs'
-              ? (language === 'en' ? 'Zookeeper Logs' : 'चिड़ियाघर कर्मचारी लॉग')
-              : (language === 'en' ? 'Messages' : 'संदेश')
+            : activeTab === 'records'
+              ? (language === 'en' ? 'Medical Records' : 'चिकित्सा रिकॉर्ड')
+              : activeTab === 'logs'
+                ? (language === 'en' ? 'Zookeeper Logs' : 'चिड़ियाघर कर्मचारी लॉग')
+                : (language === 'en' ? 'Messages' : 'संदेश')
           }
         </h1>
       </div>
@@ -468,6 +478,8 @@ export function VetDashboard() {
               </TabsContent>
             </Tabs>
           </>
+        ) : activeTab === 'records' ? (
+          <HospitalRecordsList language={language} canEdit={true} />
         ) : activeTab === 'logs' ? (
           // Logs View
           <>

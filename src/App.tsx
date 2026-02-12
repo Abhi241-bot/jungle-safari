@@ -33,6 +33,8 @@ export interface Animal {
   mood?: string;
   appetite?: string;
   notes?: string;
+  enclosure?: string;
+  lastFed?: string;
 }
 
 export interface User {
@@ -41,6 +43,22 @@ export interface User {
   role: UserRole;
   permissions: string[];
   password?: string;
+}
+
+export interface Observation {
+  id: string;
+  animalId: string;
+  userId: string;
+  userName: string;
+  timestamp: string;
+  createdAt: string;
+  healthStatus?: 'excellent' | 'good' | 'fair' | 'poor';
+  generalObservationText?: string;
+  injuriesText?: string;
+  behaviorText?: string;
+  feedingText?: string;
+  imageUrl?: string;
+  videoUrl?: string;
 }
 
 export interface Alert {

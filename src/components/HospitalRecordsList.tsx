@@ -13,8 +13,8 @@ import { HospitalRecord, HospitalRecordForm } from './HospitalRecordForm';
 import { toast } from 'sonner';
 
 interface HospitalRecordsListProps {
-    animalId: string;
-    animalName: string;
+    animalId?: string;
+    animalName?: string;
     language: Language;
     canEdit: boolean; // Only Vets can edit
 }
@@ -59,6 +59,7 @@ export function HospitalRecordsList({
             confirmDelete: 'Are you sure you want to delete this record?',
             deleted: 'Record deleted successfully',
             deleteFailed: 'Failed to delete record',
+            animal: 'Animal',
         },
         hi: {
             title: 'अस्पताल रिकॉर्ड',
@@ -84,6 +85,7 @@ export function HospitalRecordsList({
             confirmDelete: 'क्या आप वाकई इस रिकॉर्ड को हटाना चाहते हैं?',
             deleted: 'रिकॉर्ड सफलतापूर्वक हटाया गया',
             deleteFailed: 'रिकॉर्ड हटाने में विफल',
+            animal: 'जानवर',
         },
     };
 
@@ -96,16 +98,26 @@ export function HospitalRecordsList({
     const fetchRecords = async () => {
         try {
             setIsLoading(true);
-            const response = await axios.get(`${API_BASE_URL}/hospital-records/animal/${animalId}`);
-            setRecords(response.data.records || []);
+            let url = `${API_BASE_URL}/hospital-records`;
+            if (animalId) {
+                url = `${API_BASE_URL}/hospital-records/animal/${animalId}`;
+            }
+            const response = await axios.get(url);
+            // Handle both structure formats (array or object with records)
+            const data = response.data.records || response.data || [];
+            if (Array.isArray(data)) {
+                setRecords(data);
+            } else {
+                setRecords([]);
+            }
         } catch (error) {
             console.error('Failed to fetch hospital records:', error);
             // Fallback to mock data for development
             setRecords([
                 {
                     id: 'hr1',
-                    animalId,
-                    animalName,
+                    animalId: animalId || 'a1',
+                    animalName: animalName || 'Raja (Tiger)',
                     vetId: 'v1',
                     vetName: 'Dr. Sharma',
                     date: '2026-02-08',
@@ -118,8 +130,8 @@ export function HospitalRecordsList({
                 },
                 {
                     id: 'hr2',
-                    animalId,
-                    animalName,
+                    animalId: animalId || 'a1',
+                    animalName: animalName || 'Raja (Tiger)',
                     vetId: 'v1',
                     vetName: 'Dr. Patel',
                     date: '2026-02-01',
@@ -221,7 +233,7 @@ export function HospitalRecordsList({
             {/* Header */}
             <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-gray-900">{text.title}</h3>
-                {canEdit && (
+                {canEdit && animalId && (
                     <Button
                         onClick={() => {
                             setEditingRecord(undefined);
@@ -283,10 +295,16 @@ export function HospitalRecordsList({
                                 >
                                     <div className="flex items-start justify-between">
                                         <div className="flex-1">
-                                            <div className="flex items-center gap-2 mb-2">
+                                            <div className="flex flex-wrap items-center gap-2 mb-2">
                                                 <Badge className={`${getStatusColor(record.status)} text-white text-xs`}>
                                                     {getStatusText(record.status)}
                                                 </Badge>
+                                                {!animalId && (
+                                                    <span className="text-sm font-medium text-blue-800 bg-blue-50 px-2 py-0.5 rounded flex items-center gap-1">
+                                                        <User className="w-3 h-3" />
+                                                        {record.animalName}
+                                                    </span>
+                                                )}
                                                 <span className="text-sm text-gray-600 flex items-center gap-1">
                                                     <Calendar className="w-3 h-3" />
                                                     {new Date(record.date).toLocaleDateString(
