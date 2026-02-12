@@ -602,6 +602,16 @@ def process_text_observation():
             doc_ref_tuple = db.collection('observations').add(data)
             print(f"✅ Data saved to Firestore with ID: {doc_ref_tuple[1].id}")
 
+            # Update Animal's lastChecked field
+            if animal_id:
+                try:
+                    db.collection('animals').document(animal_id).update({
+                        'lastChecked': datetime.now().isoformat()
+                    })
+                    print(f"✅ Updated lastChecked for animal {animal_id}")
+                except Exception as update_e:
+                    print(f"⚠️ Failed to update animal lastChecked: {update_e}")
+
         return jsonify(data), 200
     except Exception as e:
         print(f"❌ Error processing text observation: {e}")
@@ -676,6 +686,16 @@ def process_audio_observation():
             doc_ref_tuple = db.collection('observations').add(data_dict)
             doc_ref = doc_ref_tuple[1]
             print(f"✅ Data saved to Firestore with ID: {doc_ref.id}")
+
+            # Update Animal's lastChecked field
+            if animal_id:
+                try:
+                    db.collection('animals').document(animal_id).update({
+                        'lastChecked': datetime.now().isoformat()
+                    })
+                    print(f"✅ Updated lastChecked for animal {animal_id} (Audio Log)")
+                except Exception as update_e:
+                    print(f"⚠️ Failed to update animal lastChecked: {update_e}")
 
         return jsonify(data_dict), 200
     except Exception as e:
