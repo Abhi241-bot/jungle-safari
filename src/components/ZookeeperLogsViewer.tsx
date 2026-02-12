@@ -9,6 +9,7 @@ import { Input } from './ui/input';
 import { Calendar, Download, ChevronDown, ChevronUp, Filter, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Language } from '../App';
+import { LogDetailsSections } from './LogDetailsSections';
 
 interface LogEntry {
     id: string;
@@ -287,36 +288,16 @@ export function ZookeeperLogsViewer({
                                                     exit={{ height: 0, opacity: 0 }}
                                                     transition={{ duration: 0.2 }}
                                                 >
-                                                    <div className="px-4 pb-4 border-t border-gray-200 pt-4 space-y-3">
-                                                        <div>
-                                                            <p className="text-sm font-semibold text-gray-700 mb-1">{text.observations}:</p>
-                                                            <p className="text-sm text-gray-600">{log.observations}</p>
-                                                        </div>
-
-                                                        {(log.moodPercentage !== undefined ||
-                                                            log.appetitePercentage !== undefined ||
-                                                            log.movementPercentage !== undefined) && (
-                                                                <div className="grid grid-cols-3 gap-3 pt-2">
-                                                                    {log.moodPercentage !== undefined && (
-                                                                        <div>
-                                                                            <p className="text-xs text-gray-500">{text.mood}</p>
-                                                                            <p className="text-sm font-semibold">{log.moodPercentage}%</p>
-                                                                        </div>
-                                                                    )}
-                                                                    {log.appetitePercentage !== undefined && (
-                                                                        <div>
-                                                                            <p className="text-xs text-gray-500">{text.appetite}</p>
-                                                                            <p className="text-sm font-semibold">{log.appetitePercentage}%</p>
-                                                                        </div>
-                                                                    )}
-                                                                    {log.movementPercentage !== undefined && (
-                                                                        <div>
-                                                                            <p className="text-xs text-gray-500">{text.movement}</p>
-                                                                            <p className="text-sm font-semibold">{log.movementPercentage}%</p>
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-                                                            )}
+                                                    <div className="px-4 pb-4 border-t border-gray-200 pt-4">
+                                                        <LogDetailsSections
+                                                            log={{
+                                                                ...log,
+                                                                ...log.processedData,
+                                                                // Ensure fallback for legacy fields if needed
+                                                                observationText: log.observations || log.processedData?.observationText || log.processedData?.observation
+                                                            }}
+                                                            language={language === 'en' ? 'en' : 'hi'}
+                                                        />
                                                     </div>
                                                 </motion.div>
                                             )}
