@@ -943,11 +943,5 @@ if __name__ == '__main__':
     if not os.environ.get("GOOGLE_APPLICATION_CREDENTIALS"):
         print("⚠️ WARNING: GOOGLE_APPLICATION_CREDENTIALS environment variable not set. Firestore connection will fail. Ensure it's in your .env file or set in your environment.")
 
-    # The zoo_model is instantiated globally, so its __init__ will run when backend_api.py is imported.
-    # The __init__ method now directly reads from os.environ.
-    if not zoo_model.deepgram_key:
-        print("⚠️ WARNING: DEEPGRAM_API_KEY not found. Audio transcription will fail. Ensure it's in your .env file or set in your environment.")
-    if not zoo_model.llm: # Check if LLM was initialized successfully
-        print("⚠️ WARNING: GEMINI_API_KEY not found. AI processing will use fallback data. Ensure it's in your .env file or set in your environment.")
-
-    app.run(debug=True, port=5000)
+    port = int(os.environ.get('PORT', 8080))
+    app.run(debug=True, host='0.0.0.0', port=port)
