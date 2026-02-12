@@ -44,6 +44,7 @@ export interface User {
   name: string;
   role: UserRole;
   permissions: string[];
+  assignedAnimals?: string[];
   password?: string;
 }
 

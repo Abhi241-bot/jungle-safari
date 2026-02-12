@@ -13,6 +13,7 @@ import { Input } from './ui/input';
 import { useReactMediaRecorder } from 'react-media-recorder';
 import { motion } from 'motion/react';
 import { GuidedVoiceRecording } from './GuidedVoiceRecording';
+import { LogDetailsSections } from './LogDetailsSections';
 
 // Define the structure of the data returned from the API
 interface ProcessedData {
@@ -506,30 +507,32 @@ export function DailyLogEntry({ onLogSubmitted }: DailyLogEntryProps = {}) {
         )}
 
         {processedData && (
-          <Card className="p-4 bg-green-50 border-l-4 border-green-500">
-            <div className="flex items-center mb-3">
-              <Server className="mr-3 text-green-700" />
-              <h2 className="text-lg font-semibold text-green-800">{t.processedData}</h2>
+          <div className="mt-6">
+            <div className="flex items-center gap-2 mb-4 p-3 bg-amber-100 rounded-lg border border-amber-200">
+              <div className="w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center text-white">
+                <FileText className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 className="text-amber-900 font-bold leading-tight">AI Generated Report</h2>
+                <p className="text-xs text-amber-700">Detailed 16-guided summary extraction</p>
+              </div>
             </div>
-            <div className="space-y-2 text-sm text-gray-700">
-              <p><strong>Date:</strong> {processedData.date_or_day}</p>
-              <p><strong>Health Summary:</strong> {processedData.daily_animal_health_monitoring}</p>
-              <p><strong>Animal Observed on Time:</strong> {processedData.animal_observed_on_time ? 'Yes' : 'No'}</p>
-              <p><strong>Clean Water Provided:</strong> {processedData.clean_drinking_water_provided ? 'Yes' : 'No'}</p>
-              <p><strong>Enclosure Cleaned:</strong> {processedData.enclosure_cleaned_properly ? 'Yes' : 'No'}</p>
-              <p><strong>Normal Behavior:</strong> {processedData.normal_behaviour_status ? 'Yes' : 'No'}</p>
-              {!processedData.normal_behaviour_status && processedData.normal_behaviour_details && (
-                <p><strong>Abnormal Behavior Details:</strong> {processedData.normal_behaviour_details}</p>
-              )}
-              <p><strong>Feed & Supplements Available:</strong> {processedData.feed_and_supplements_available ? 'Yes' : 'No'}</p>
-              <p><strong>Feed Given as Prescribed:</strong> {processedData.feed_given_as_prescribed ? 'Yes' : 'No'}</p>
-              {processedData.other_animal_requirements && <p><strong>Other Requirements:</strong> {processedData.other_animal_requirements}</p>}
-              <p><strong>Carnivorous Feeding Chart:</strong> {processedData.carnivorous_animal_feeding_chart}</p>
-              <p><strong>Medicine Stock Register:</strong> {processedData.medicine_stock_register}</p>
-              <p><strong>Daily Wildlife Monitoring:</strong> {processedData.daily_wildlife_monitoring}</p>
-              <p><strong>Signature:</strong> {processedData.incharge_signature}</p>
-            </div>
-          </Card>
+            <Card className="p-4 bg-white shadow-xl border-t-4 border-amber-500 rounded-xl overflow-hidden">
+              <LogDetailsSections log={processedData} language={language} />
+              <div className="mt-6 border-t pt-4">
+                <Button
+                  variant="outline"
+                  className="w-full border-amber-600 text-amber-700 hover:bg-amber-50"
+                  onClick={() => {
+                    toast.info(language === 'en' ? 'Observation saved to history' : 'अवलोकन इतिहास में सहेजा गया');
+                    setCurrentScreen('dashboard');
+                  }}
+                >
+                  Done & Return to Dashboard
+                </Button>
+              </div>
+            </Card>
+          </div>
         )}
       </div>
 

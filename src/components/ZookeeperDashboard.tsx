@@ -271,17 +271,19 @@ export function ZookeeperDashboard({ schedule }: ZookeeperDashboardProps) {
                             <p className="text-xs text-gray-600 mt-1">{alert.animalName} • {alert.location}</p>
                             <div className="flex justify-between items-center mt-2">
                               <p className="text-xs text-gray-500">{new Date(alert.createdAt).toLocaleTimeString()}</p>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className="h-7 text-xs text-gray-500 hover:bg-gray-200"
-                                onClick={(e: React.MouseEvent) => {
-                                  e.stopPropagation();
-                                  handleDismissAlert(alert.id);
-                                }}
-                              >
-                                {language === 'en' ? 'Dismiss' : 'खारिज करें'}
-                              </Button>
+                              {currentUser?.role === 'admin' && (
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-7 text-xs text-gray-500 hover:bg-gray-200"
+                                  onClick={(e: React.MouseEvent) => {
+                                    e.stopPropagation();
+                                    handleDismissAlert(alert.id);
+                                  }}
+                                >
+                                  {language === 'en' ? 'Dismiss' : 'खारिज करें'}
+                                </Button>
+                              )}
                             </div>
                           </div>
                         </div>

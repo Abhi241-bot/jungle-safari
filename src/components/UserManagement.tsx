@@ -1,76 +1,64 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { API_BASE_URL } from '../config';
 import axios from 'axios';
-import { API_BASE_URL } from '../config';
 import { AppContext, User } from '../App';
-import { API_BASE_URL } from '../config';
 import { translations } from './mockData';
-import { API_BASE_URL } from '../config';
-import { ArrowLeft, UserPlus, Edit, Trash2, Shield } from 'lucide-react';
-import { API_BASE_URL } from '../config';
+import { ArrowLeft, UserPlus, Edit, Trash2, Shield, Loader, AlertTriangle } from 'lucide-react';
 import { motion } from 'motion/react';
-import { API_BASE_URL } from '../config';
 import { Button } from './ui/button';
-import { API_BASE_URL } from '../config';
 import { Card } from './ui/card';
-import { API_BASE_URL } from '../config';
 import { Badge } from './ui/badge';
-import { API_BASE_URL } from '../config';
 import { Switch } from './ui/switch';
-import { API_BASE_URL } from '../config';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from './ui/dialog';
-import { API_BASE_URL } from '../config';
 import { Input } from './ui/input';
-import { API_BASE_URL } from '../config';
 import { Label } from './ui/label';
-import { API_BASE_URL } from '../config';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { API_BASE_URL } from '../config';
 import { Checkbox } from './ui/checkbox';
-import { API_BASE_URL } from '../config';
 import { toast } from 'sonner';
-import { API_BASE_URL } from '../config';
-import { Loader, AlertTriangle } from 'lucide-react';
-import { API_BASE_URL } from '../config';
 
 export function UserManagement() {
   const { language, setCurrentScreen } = useContext(AppContext);
   const t = translations[language];
   const [users, setUsers] = useState<User[]>([]);
+  const [animals, setAnimals] = useState<any[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
 
-  const fetchUsers = async () => {
+  const fetchData = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get(`${API_BASE_URL}/users`);
-      setUsers(response.data);
+      const [usersResponse, animalsResponse] = await Promise.all([
+        axios.get(`${API_BASE_URL}/users`),
+        axios.get(`${API_BASE_URL}/animals`),
+      ]);
+      setUsers(usersResponse.data);
+      setAnimals(animalsResponse.data);
     } catch (err) {
       setError(t.processingError);
-      console.error("Failed to fetch users:", err);
+      console.error("Failed to fetch data:", err);
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchUsers();
+    fetchData();
   }, []);
 
   // Create form state
   const [newUserName, setNewUserName] = useState('');
   const [newUserRole, setNewUserRole] = useState('');
-  const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
+  const [selectedAnimalIds, setSelectedAnimalIds] = useState<string[]>([]);
 
   // Edit form state
   const [editingUserId, setEditingUserId] = useState<string | number | null>(null);
   const [editUserName, setEditUserName] = useState('');
   const [editUserRole, setEditUserRole] = useState('');
   const [editUserPassword, setEditUserPassword] = useState('');
-  const [editPermissions, setEditPermissions] = useState<string[]>([]);
+  const [editSelectedAnimalIds, setEditSelectedAnimalIds] = useState<string[]>([]);
 
   const roleColors = {
     zookeeper: 'bg-green-100 text-green-800',
@@ -86,53 +74,13 @@ export function UserManagement() {
     officer: t.officer,
   };
 
-  const allPermissions = [
-    { id: 'view_animals', label: language === 'en' ? 'View Animals' : 'जानवर देखें' },
-    { id: 'update_logs', label: language === 'en' ? 'Update Logs' : 'लॉग अपडेट करें' },
-    { id: 'upload_media', label: language === 'en' ? 'Upload Media' : 'मीडिया अपलोड करें' },
-    { id: 'view_health', label: language === 'en' ? 'View Health Data' : 'स्वास्थ्य डेटा देखें' },
-    { id: 'prescribe', label: language === 'en' ? 'Prescribe Treatment' : 'उपचार लिखें' },
-    { id: 'view_food', label: language === 'en' ? 'View Food Data' : 'भोजन डेटा देखें' },
-    { id: 'view_costs', label: language === 'en' ? 'View Costs' : 'लागत देखें' },
-    { id: 'all', label: language === 'en' ? 'All Permissions' : 'सभी अनुमतियाँ' },
-  ];
 
-  const handlePermissionToggle = (permId: string) => {
-    if (permId === 'all') {
-      if (selectedPermissions.includes('all')) {
-        setSelectedPermissions([]);
-      } else {
-        setSelectedPermissions(['all']);
-      }
-    } else {
-      setSelectedPermissions((prev) => {
-        const filtered = prev.filter(p => p !== 'all');
-        if (filtered.includes(permId)) {
-          return filtered.filter(p => p !== permId);
-        } else {
-          return [...filtered, permId];
-        }
-      });
-    }
-  };
 
-  const handleEditPermissionToggle = (permId: string) => {
-    if (permId === 'all') {
-      if (editPermissions.includes('all')) {
-        setEditPermissions([]);
-      } else {
-        setEditPermissions(['all']);
-      }
-    } else {
-      setEditPermissions((prev) => {
-        const filtered = prev.filter(p => p !== 'all');
-        if (filtered.includes(permId)) {
-          return filtered.filter(p => p !== permId);
-        } else {
-          return [...filtered, permId];
-        }
-      });
-    }
+  const handleAnimalToggle = (animalId: string, isEdit: boolean = false) => {
+    const setState = isEdit ? setEditSelectedAnimalIds : setSelectedAnimalIds;
+    setState(prev =>
+      prev.includes(animalId) ? prev.filter(id => id !== animalId) : [...prev, animalId]
+    );
   };
 
   const handleCreateUser = async () => {
@@ -144,16 +92,13 @@ export function UserManagement() {
       toast.error(language === 'en' ? 'Please select a role' : 'कृपया भूमिका चुनें');
       return;
     }
-    if (selectedPermissions.length === 0) {
-      toast.error(language === 'en' ? 'Please select at least one permission' : 'कृपया कम से कम एक अनुमति चुनें');
-      return;
-    }
 
     const newUserPayload = {
       name: newUserName,
       role: newUserRole as 'zookeeper' | 'admin' | 'vet' | 'officer',
-      permissions: selectedPermissions,
-      password: 'default123', // Default password for new users
+      assignedAnimals: selectedAnimalIds,
+      permissions: ['all'], // Default to all for now as specific permissions are being removed from UI
+      password: 'default123',
     };
 
     try {
@@ -164,19 +109,19 @@ export function UserManagement() {
       // Reset form
       setNewUserName('');
       setNewUserRole('');
-      setSelectedPermissions([]);
+      setSelectedAnimalIds([]);
       setIsDialogOpen(false);
     } catch (err) {
       toast.error(language === 'en' ? 'Failed to create user' : 'उपयोगकर्ता बनाने में विफल');
     }
   };
 
-  const handleEditUser = (user: typeof users[0]) => {
+  const handleEditUser = (user: typeof users[0] | any) => {
     setEditingUserId(user.id);
     setEditUserName(user.name);
     setEditUserRole(user.role);
     setEditUserPassword(user.password || '');
-    setEditPermissions(user.permissions);
+    setEditSelectedAnimalIds(user.assignedAnimals || []);
     setIsEditDialogOpen(true);
   };
 
@@ -189,34 +134,27 @@ export function UserManagement() {
       toast.error(language === 'en' ? 'Please select a role' : 'कृपया भूमिका चुनें');
       return;
     }
-    if (editPermissions.length === 0) {
-      toast.error(language === 'en' ? 'Please select at least one permission' : 'कृपया कम से कम एक अनुमति चुनें');
-      return;
-    }
 
     try {
-      // Update user in backend
       const updatePayload: any = {
         name: editUserName,
         role: editUserRole,
-        permissions: editPermissions,
+        assignedAnimals: editSelectedAnimalIds,
       };
 
-      // Only include password if it was changed
       if (editUserPassword) {
         updatePayload.password = editUserPassword;
       }
 
       await axios.put(`${API_BASE_URL}/users/${editingUserId}`, updatePayload);
 
-      // Update local state after successful API call
       setUsers(users.map(user =>
         user.id === editingUserId
           ? {
             ...user,
             name: editUserName,
             role: editUserRole as 'zookeeper' | 'admin' | 'vet' | 'officer',
-            permissions: editPermissions,
+            assignedAnimals: editSelectedAnimalIds,
             password: editUserPassword || user.password,
           }
           : user
@@ -224,12 +162,11 @@ export function UserManagement() {
 
       toast.success(language === 'en' ? 'User updated successfully!' : 'उपयोगकर्ता सफलतापूर्वक अपडेट किया गया!');
 
-      // Reset edit form
       setEditingUserId(null);
       setEditUserName('');
       setEditUserRole('');
       setEditUserPassword('');
-      setEditPermissions([]);
+      setEditSelectedAnimalIds([]);
       setIsEditDialogOpen(false);
     } catch (err) {
       toast.error(language === 'en' ? 'Failed to update user' : 'उपयोगकर्ता अपडेट करने में विफल');
@@ -321,25 +258,27 @@ export function UserManagement() {
                   </SelectContent>
                 </Select>
               </div>
-              <div>
-                <Label className="mb-3 block">
-                  {language === 'en' ? 'Permissions' : 'अनुमतियाँ'}
-                </Label>
-                <div className="space-y-2 max-h-48 overflow-y-auto">
-                  {allPermissions.map((perm) => (
-                    <div key={perm.id} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`create-${perm.id}`}
-                        checked={selectedPermissions.includes(perm.id)}
-                        onCheckedChange={() => handlePermissionToggle(perm.id)}
-                      />
-                      <label htmlFor={`create-${perm.id}`} className="text-sm cursor-pointer">
-                        {perm.label}
-                      </label>
-                    </div>
-                  ))}
+              {newUserRole === 'zookeeper' && (
+                <div>
+                  <Label className="mb-3 block">
+                    {language === 'en' ? 'Assign Animals' : 'जानवर असाइन करें'}
+                  </Label>
+                  <div className="space-y-2 max-h-48 overflow-y-auto border rounded-md p-2">
+                    {animals.map((animal) => (
+                      <div key={animal.id} className="flex items-center space-x-2 p-1 hover:bg-gray-50 rounded">
+                        <Checkbox
+                          id={`create-${animal.id}`}
+                          checked={selectedAnimalIds.includes(animal.id)}
+                          onCheckedChange={() => handleAnimalToggle(animal.id)}
+                        />
+                        <label htmlFor={`create-${animal.id}`} className="text-sm cursor-pointer flex-1">
+                          {animal.name} ({animal.species})
+                        </label>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                 <p className="text-sm text-blue-800">
                   {language === 'en'
@@ -400,25 +339,27 @@ export function UserManagement() {
                   onChange={(e) => setEditUserPassword(e.target.value)}
                 />
               </div>
-              <div>
-                <Label className="mb-3 block">
-                  {language === 'en' ? 'Permissions' : 'अनुमतियाँ'}
-                </Label>
-                <div className="space-y-2 max-h-48 overflow-y-auto">
-                  {allPermissions.map((perm) => (
-                    <div key={perm.id} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`edit-${perm.id}`}
-                        checked={editPermissions.includes(perm.id)}
-                        onCheckedChange={() => handleEditPermissionToggle(perm.id)}
-                      />
-                      <label htmlFor={`edit-${perm.id}`} className="text-sm cursor-pointer">
-                        {perm.label}
-                      </label>
-                    </div>
-                  ))}
+              {editUserRole === 'zookeeper' && (
+                <div>
+                  <Label className="mb-3 block">
+                    {language === 'en' ? 'Assign Animals' : 'जानवर असाइन करें'}
+                  </Label>
+                  <div className="space-y-2 max-h-48 overflow-y-auto border rounded-md p-2">
+                    {animals.map((animal) => (
+                      <div key={animal.id} className="flex items-center space-x-2 p-1 hover:bg-gray-50 rounded">
+                        <Checkbox
+                          id={`edit-${animal.id}`}
+                          checked={editSelectedAnimalIds.includes(animal.id)}
+                          onCheckedChange={() => handleAnimalToggle(animal.id, true)}
+                        />
+                        <label htmlFor={`edit-${animal.id}`} className="text-sm cursor-pointer flex-1">
+                          {animal.name} ({animal.species})
+                        </label>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
               <Button
                 className="w-full bg-blue-600 hover:bg-blue-700"
                 onClick={handleSaveEditUser}
@@ -454,32 +395,38 @@ export function UserManagement() {
                       </Badge>
                     </div>
 
-                    {/* Permissions */}
+                    {/* Assigned Animals */}
                     <div className="space-y-2 mt-3">
-                      {user.permissions.includes('all') ? (
+                      {user.role === 'zookeeper' && (
+                        <div className="space-y-1">
+                          <p className="text-xs font-semibold text-gray-500">
+                            {language === 'en' ? 'Assigned Animals' : 'सौंपे गए जानवर'}
+                          </p>
+                          <div className="flex flex-wrap gap-1">
+                            {user.assignedAnimals && user.assignedAnimals.length > 0 ? (
+                              user.assignedAnimals.map((animalId: string) => {
+                                const animal = animals.find(a => a.id === animalId);
+                                return (
+                                  <Badge key={animalId} variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                                    {animal ? animal.name : animalId}
+                                  </Badge>
+                                );
+                              })
+                            ) : (
+                              <span className="text-xs text-gray-400 italic">
+                                {language === 'en' ? 'No animals assigned' : 'कोई जानवर नहीं सौंपा गया'}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                      {(user.role === 'admin' || user.role === 'vet' || user.role === 'officer') && (
                         <div className="flex items-center justify-between p-2 bg-amber-50 rounded">
                           <span className="text-sm text-amber-900">
-                            {language === 'en' ? 'All Permissions' : 'सभी अनुमतियाँ'}
+                            {language === 'en' ? 'Full System Access' : 'पूर्ण सिस्टम एक्सेस'}
                           </span>
                           <Shield className="w-4 h-4 text-amber-600" />
                         </div>
-                      ) : (
-                        <>
-                          {user.permissions.slice(0, 2).map((perm) => {
-                            const permission = allPermissions.find((p) => p.id === perm);
-                            return (
-                              <div key={perm} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                                <span className="text-sm text-gray-700">{permission?.label}</span>
-                                <Switch checked={true} disabled />
-                              </div>
-                            );
-                          })}
-                          {user.permissions.length > 2 && (
-                            <div className="text-xs text-gray-500 pl-2">
-                              +{user.permissions.length - 2} {language === 'en' ? 'more' : 'और'}
-                            </div>
-                          )}
-                        </>
                       )}
                     </div>
 

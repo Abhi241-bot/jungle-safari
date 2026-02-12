@@ -64,7 +64,6 @@ export function ZookeeperLogsViewer({
             filterByDate: 'Filter by date',
             filterByAnimal: 'Filter by animal',
             clearFilters: 'Clear Filters',
-            exportPDF: 'Export PDF',
             submittedAt: 'Submitted',
             animal: 'Animal',
             health: 'Health',
@@ -86,7 +85,6 @@ export function ZookeeperLogsViewer({
             filterByDate: 'तारीख से फ़िल्टर करें',
             filterByAnimal: 'जानवर से फ़िल्टर करें',
             clearFilters: 'फ़िल्टर साफ़ करें',
-            exportPDF: 'PDF निर्यात करें',
             submittedAt: 'सबमिट किया गया',
             animal: 'जानवर',
             health: 'स्वास्थ्य',
@@ -190,9 +188,7 @@ export function ZookeeperLogsViewer({
         return 'bg-red-100 text-red-700';
     };
 
-    const handleExportPDF = () => {
-        console.log('Exporting logs to PDF...');
-    };
+
 
     return (
         <Sheet open={isOpen} onOpenChange={onClose}>
@@ -242,10 +238,7 @@ export function ZookeeperLogsViewer({
                     </div>
 
                     {/* Export Button */}
-                    <Button onClick={handleExportPDF} variant="outline" className="w-full">
-                        <Download className="w-4 h-4 mr-2" />
-                        {text.exportPDF}
-                    </Button>
+
 
                     {/* Logs List */}
                     {isLoading ? (
