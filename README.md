@@ -31,12 +31,11 @@ The **Jungle Safari Zoo Management System** is a modern, full-stack web applicat
 
 ### Key Highlights
 
-- 🎤 **Audio Transcription**: Record observations in Hindi or English using Deepgram/Groq Whisper
-- 🤖 **AI-Powered Extraction**: Google Gemini automatically extracts structured data from observations
-- 📊 **Comprehensive Logging**: 35+ fields covering animal health and enclosure conditions
-- 🌐 **Bilingual Support**: Full English and Hindi interface
+- 📊 **Per-Animal Status Alarms**: Individual morning and evening log tracking for every animal
+- 🔔 **Deadline Notifications**: Automated reminders at 11 AM and 4 PM with recurring 30-minute alerts
+- 🆘 **Emergency SOS**: Single-tap emergency alert system for forest and zoo incidents
 - 📱 **Mobile-First Design**: Responsive UI optimized for field use
-- 🔒 **Role-Based Access**: Admin and zookeeper roles with different permissions
+- 🔒 **Role-Based Access**: Specialized dashboards for Admin, Zookeepers, Vets, and Forest Officers
 - 📸 **Media Management**: Upload and store photos/videos via Cloudinary
 - 📈 **Analytics Dashboard**: Real-time insights and statistics
 
@@ -49,20 +48,15 @@ The **Jungle Safari Zoo Management System** is a modern, full-stack web applicat
 - **Animal Monitoring**
   - Record daily observations via audio or text
   - Track feeding, health, behavior, and reproductive status
+  - **Per-Animal Log Alarms**: Visual indicators (Checkmarks/Clocks) for morning/evening status
+  - **Log Deadlines**: Automated 11 AM and 4 PM reminders with recurring alerts
   - Upload photos and videos
   - View historical logs with calendar interface
 
-- **Enclosure Management**
-  - Monitor cleanliness and waste removal
-  - Check water, fencing, and safety conditions
-  - Track pest control and staff attendance
-  - Log maintenance issues
-
-- **Quick Actions**
-  - Add new animals
-  - Submit daily reports
-  - View assigned animals
-  - Access emergency protocols
+- **Emergency & Communication**
+  - **SOS Alert System**: Instant emergency notifications to all departments
+  - **Messaging Interface**: Secure communication between zookeepers and vets
+  - **Hospital Records**: Direct access to animal medical history and reports
 
 ### For Administrators
 
@@ -421,6 +415,20 @@ Logs are displayed with:
 
 ---
 
+### 3. Per-Animal Status Alarms & Smart Deadlines
+
+The system moves beyond global tracking to individual animal monitoring:
+- **Individual Clocks/Checkmarks**: Each animal card independently tracks its morning and evening log status.
+- **Smart Time Windows**: 
+  - **Morning Slot**: Logs submitted before 2 PM update `lastMorningCheck`.
+  - **Evening Slot**: Logs submitted after 2 PM update `lastEveningCheck`.
+- **Automated Deadlines**:
+  - **11:00 AM**: Primary morning log deadline.
+  - **4:00 PM**: Primary evening log deadline.
+- **Recurring Notifications**: If a deadline is missed, the system triggers a localized warning notification every **30 minutes** until the required logs are submitted.
+
+---
+
 ## 🧪 Testing
 
 ### Run Tests Locally
@@ -523,12 +531,13 @@ For support, email [your-email@example.com] or open an issue on GitHub.
 
 ### Recent Updates
 
+- ✅ **Per-Animal Log Alarms**: Implemented unique morning/evening tracking for every animal
+- ✅ **Deadline Notifications**: Added 11 AM and 4 PM automated reminders with 30-min recursion
+- ✅ **Emergency SOS System**: Integrated instant SOS alerting for field incidents
+- ✅ **UI Optimization**: Streamlined dashboard by removing redundant widgets
 - ✅ Implemented comprehensive log questions (35+ fields)
 - ✅ Added collapsible sections for better UX
 - ✅ Integrated Groq Whisper as Deepgram fallback
-- ✅ Enhanced AI prompt for better extraction
-- ✅ Improved mobile responsiveness
-- ✅ Added dark mode support
 - ✅ Deployed to production (Render + Vercel)
 
 ---
