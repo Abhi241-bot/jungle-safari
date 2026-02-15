@@ -526,14 +526,14 @@ export function DailyLogEntry({ onLogSubmitted }: DailyLogEntryProps = {}) {
                 <Camera className="w-4 h-4 mr-2" /> {imageFile ? imageFile.name : t.uploadImage}
               </Label>
             </Button>
-            <input id="image-upload" type="file" accept="image/*" className="hidden" onChange={(e) => setImageFile(e.target.files?.[0] || null)} />
+            <input id="image-upload" type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => setImageFile(e.target.files?.[0] || null)} />
 
             <Button variant="outline" asChild disabled={isLoading}>
               <Label htmlFor="video-upload" className="cursor-pointer flex items-center justify-center">
                 <Video className="w-4 h-4 mr-2" /> {videoFile ? videoFile.name : t.uploadVideo}
               </Label>
             </Button>
-            <input id="video-upload" type="file" accept="video/*" className="hidden" onChange={(e) => setVideoFile(e.target.files?.[0] || null)} />
+            <input id="video-upload" type="file" accept="video/*" capture="environment" className="hidden" onChange={(e) => setVideoFile(e.target.files?.[0] || null)} />
           </div>
           {/* Gate Closed Image Upload */}
           <div className="mt-4 border-t pt-4">
@@ -545,7 +545,7 @@ export function DailyLogEntry({ onLogSubmitted }: DailyLogEntryProps = {}) {
                 <Camera className="w-4 h-4 mr-2" /> {gateImageFile ? gateImageFile.name : (language === 'en' ? 'Upload Gate Photo' : 'गेट फोटो अपलोड करें')}
               </Label>
             </Button>
-            <input id="gate-image-upload" type="file" accept="image/*" className="hidden" onChange={(e) => setGateImageFile(e.target.files?.[0] || null)} />
+            <input id="gate-image-upload" type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => setGateImageFile(e.target.files?.[0] || null)} />
           </div>
         </Card>
 

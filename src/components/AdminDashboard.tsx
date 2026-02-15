@@ -3,7 +3,7 @@ import { API_BASE_URL } from '../config';
 import axios from 'axios';
 import { AppContext, Animal, User, Alert as AlertType } from '../App';
 import { translations } from './mockData';
-import { Bell, Menu, Users, Dog, AlertTriangle, Plus, UserPlus, Settings, Package, ClipboardList, Pill, Home, List, MessageSquare } from 'lucide-react';
+import { Bell, Menu, Users, Dog, AlertTriangle, Plus, UserPlus, Settings, Package, ClipboardList, Pill, Home, List, MessageSquare, Camera, Upload } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
@@ -47,6 +47,8 @@ export function AdminDashboard() {
   const [newAnimalAssignedTo, setNewAnimalAssignedTo] = useState('');
   const [newAnimalHealth, setNewAnimalHealth] = useState<'excellent' | 'good' | 'fair' | 'poor'>('good');
   const [newAnimalMood, setNewAnimalMood] = useState('Normal');
+  const [newAnimalImageFile, setNewAnimalImageFile] = useState<File | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -114,12 +116,34 @@ export function AdminDashboard() {
       return;
     }
 
+    let imageUrl = 'https://images.unsplash.com/photo-1564349683136-77e08dba1ef7?w=400'; // Default image
+
+    // Upload image to Cloudinary if provided
+    if (newAnimalImageFile) {
+      setIsUploadingImage(true);
+      const formData = new FormData();
+      formData.append('file', newAnimalImageFile);
+
+      try {
+        const uploadResponse = await axios.post(`${API_BASE_URL}/upload_media`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        imageUrl = uploadResponse.data.url;
+        toast.success(language === 'en' ? 'Image uploaded successfully' : 'छवि सफलतापूर्वक अपलोड की गई');
+      } catch (uploadErr) {
+        console.error('Image upload failed:', uploadErr);
+        toast.error(language === 'en' ? 'Image upload failed, using default' : 'छवि अपलोड विफल, डिफ़ॉल्ट का उपयोग कर रहे हैं');
+      } finally {
+        setIsUploadingImage(false);
+      }
+    }
+
     const newAnimalPayload = {
       name: newAnimalName,
       species: newAnimalSpecies,
       age: newAnimalAge,
       enclosure: newAnimalEnclosure,
-      image: 'https://images.unsplash.com/photo-1564349683136-77e08dba1ef7?w=400', // Default image
+      image: imageUrl,
       health: newAnimalHealth,
       assignedTo: newAnimalAssignedTo,
     };
@@ -137,6 +161,7 @@ export function AdminDashboard() {
       setNewAnimalAssignedTo('');
       setNewAnimalHealth('good');
       setNewAnimalMood('Normal');
+      setNewAnimalImageFile(null);
       setIsAnimalDialogOpen(false);
     } catch (err) {
       toast.error(language === 'en' ? 'Failed to add animal' : 'जानवर जोड़ने में विफल');
@@ -417,6 +442,37 @@ export function AdminDashboard() {
                       </Select>
                     </div>
                     <div>
+                      <Label>{language === 'en' ? 'Animal Photo' : 'जानवर की फोटो'}</Label>
+                      <div className="flex flex-col gap-2">
+                        <Button variant="outline" asChild className="w-full">
+                          <Label htmlFor="animal-image-upload" className="cursor-pointer flex items-center justify-center">
+                            <Camera className="w-4 h-4 mr-2" />
+                            {newAnimalImageFile ? newAnimalImageFile.name : (language === 'en' ? 'Take/Upload Photo' : 'फोटो लें/अपलोड करें')}
+                          </Label>
+                        </Button>
+                        <input
+                          id="animal-image-upload"
+                          type="file"
+                          accept="image/*"
+                          capture="environment"
+                          className="hidden"
+                          onChange={(e: any) => setNewAnimalImageFile(e.target.files?.[0] || null)}
+                        />
+                        {newAnimalImageFile && (
+                          <div className="relative w-full h-32 bg-gray-100 rounded-lg overflow-hidden">
+                            <img
+                              src={URL.createObjectURL(newAnimalImageFile)}
+                              alt="Preview"
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        )}
+                        <p className="text-xs text-gray-500">
+                          {language === 'en' ? 'Optional: Add a photo for the animal card' : 'वैकल्पिक: जानवर कार्ड के लिए फोटो जोड़ें'}
+                        </p>
+                      </div>
+                    </div>
+                    <div>
                       <Label>{language === 'en' ? 'Age' : 'उम्र'}</Label>
                       <Input
                         placeholder={language === 'en' ? 'e.g., 5 years' : 'जैसे, 5 साल'}
@@ -462,8 +518,16 @@ export function AdminDashboard() {
                     <Button
                       className="w-full bg-green-600 hover:bg-green-700"
                       onClick={handleCreateAnimal}
+                      disabled={isUploadingImage}
                     >
-                      {language === 'en' ? 'Add Animal' : 'जानवर जोड़ें'}
+                      {isUploadingImage ? (
+                        <>
+                          <Loader className="w-4 h-4 mr-2 animate-spin" />
+                          {language === 'en' ? 'Uploading...' : 'अपलोड हो रहा है...'}
+                        </>
+                      ) : (
+                        language === 'en' ? 'Add Animal' : 'जानवर जोड़ें'
+                      )}
                     </Button>
                   </div>
                 </DialogContent>
