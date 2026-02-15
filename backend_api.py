@@ -650,6 +650,8 @@ def transcribe_audio():
 @app.route('/process_audio_observation', methods=['POST'])
 def process_audio_observation():
     """Processes an audio observation, transcribes it, and stores it in Firestore."""
+    from datetime import datetime
+    
     if 'audio' not in request.files:
         return jsonify({"error": "No audio file provided"}), 400
 
