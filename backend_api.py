@@ -600,7 +600,9 @@ def process_text_observation():
         # Save to Firestore if the client is available
         if db:
             doc_ref_tuple = db.collection('observations').add(data)
-            print(f"✅ Data saved to Firestore with ID: {doc_ref_tuple[1].id}")
+            doc_id = doc_ref_tuple[1].id
+            data['id'] = doc_id  # Add the document ID to the response
+            print(f"✅ Data saved to Firestore with ID: {doc_id}")
 
             # Update Animal's lastChecked field
             if animal_id:
@@ -700,7 +702,9 @@ def process_audio_observation():
         if db:
             doc_ref_tuple = db.collection('observations').add(data_dict)
             doc_ref = doc_ref_tuple[1]
-            print(f"✅ Data saved to Firestore with ID: {doc_ref.id}")
+            doc_id = doc_ref.id
+            data_dict['id'] = doc_id  # Add the document ID to the response
+            print(f"✅ Data saved to Firestore with ID: {doc_id}")
 
             # Update Animal's lastChecked field
             if animal_id:
