@@ -3,7 +3,7 @@ import { API_BASE_URL } from '../config';
 import axios from 'axios';
 import { AppContext, User as AppUser } from '../App';
 import { mockAnimals, translations } from './mockData';
-import { ArrowLeft, Send, Loader, AlertTriangle, Server, Mic, Square, Play, Trash2, FileText, HeartPulse, Camera, Video, Smile, Meh, Frown, Angry } from 'lucide-react';
+import { ArrowLeft, Send, Loader, AlertTriangle, Server, Mic, Square, Play, Trash2, FileText, HeartPulse, Camera, Video, Smile, Meh, Frown, Angry, ChevronUp, ChevronDown } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { Textarea } from './ui/textarea';
@@ -53,6 +53,7 @@ export function DailyLogEntry({ onLogSubmitted }: DailyLogEntryProps = {}) {
   const [showGuidedRecording, setShowGuidedRecording] = useState(false);
   const [voiceRecordingBlob, setVoiceRecordingBlob] = useState<Blob | null>(null);
   const [voiceTranscript, setVoiceTranscript] = useState<string>('');
+  const [showQuestionGuide, setShowQuestionGuide] = useState(false);
 
   // API State
   const [isLoading, setIsLoading] = useState(false);
@@ -420,6 +421,71 @@ export function DailyLogEntry({ onLogSubmitted }: DailyLogEntryProps = {}) {
             className="h-32 text-base"
             disabled={isLoading} // Only disable when loading, allow editing even with audio
           />
+        </Card>
+
+        {/* 16-Question Inspection Guide */}
+        <Card className="p-4 bg-gradient-to-br from-blue-50 to-purple-50 border-2 border-blue-200 shadow-md">
+          <div
+            className="flex items-center justify-between cursor-pointer"
+            onClick={() => setShowQuestionGuide(!showQuestionGuide)}
+          >
+            <Label className="flex items-center gap-2 text-blue-900 font-semibold cursor-pointer">
+              <FileText className="w-5 h-5" />
+              {language === 'en' ? '16-Point Inspection Guide (Click to expand)' : '16-बिंदु निरीक्षण गाइड (विस्तार के लिए क्लिक करें)'}
+            </Label>
+            <Button variant="ghost" size="sm">
+              {showQuestionGuide ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+            </Button>
+          </div>
+
+          {showQuestionGuide && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="mt-4 space-y-3 text-sm"
+            >
+              <div className="bg-white p-3 rounded-lg border border-blue-200">
+                <h3 className="font-bold text-blue-900 mb-2">
+                  {language === 'en' ? 'Section A: Daily Animal Health' : 'खंड A: दैनिक पशु स्वास्थ्य'}
+                </h3>
+                <ol className="space-y-2 list-decimal list-inside text-gray-700">
+                  <li><strong>{language === 'en' ? 'Feeding & Drinking:' : 'भोजन और पानी:'}</strong> {t.question1}</li>
+                  <li><strong>{language === 'en' ? 'Health & Physical Condition:' : 'स्वास्थ्य और शारीरिक स्थिति:'}</strong> {t.question2}</li>
+                  <li><strong>{language === 'en' ? 'Behaviour & Activity:' : 'व्यवहार और गतिविधि:'}</strong> {t.question3}</li>
+                  <li><strong>{language === 'en' ? 'Reproductive Status:' : 'प्रजनन स्थिति:'}</strong> {t.question4}</li>
+                  <li><strong>{language === 'en' ? 'Mortality / Critical Condition:' : 'मृत्यु / गंभीर स्थिति:'}</strong> {t.question5}</li>
+                  <li><strong>{language === 'en' ? 'Hygiene, Pest & Safety:' : 'स्वच्छता, कीट और सुरक्षा:'}</strong> {t.question6}</li>
+                  <li><strong>{language === 'en' ? 'Additional Observations:' : 'अतिरिक्त अवलोकन:'}</strong> {t.question7}</li>
+                </ol>
+              </div>
+
+              <div className="bg-white p-3 rounded-lg border border-purple-200">
+                <h3 className="font-bold text-purple-900 mb-2">
+                  {language === 'en' ? 'Enclosure Report' : 'बाड़ा रिपोर्ट'}
+                </h3>
+                <ol className="space-y-2 list-decimal list-inside text-gray-700" start={8}>
+                  <li><strong>{language === 'en' ? 'Cleanliness & Waste:' : 'स्वच्छता और कचरा:'}</strong> {t.question8}</li>
+                  <li><strong>{language === 'en' ? 'Water & Sanitation:' : 'पानी और स्वच्छता:'}</strong> {t.question9}</li>
+                  <li><strong>{language === 'en' ? 'Fencing & Locking:' : 'बाड़ और ताला:'}</strong> {t.question10}</li>
+                  <li><strong>{language === 'en' ? 'Moat Condition:' : 'खाई की स्थिति:'}</strong> {t.question11}</li>
+                  <li><strong>{language === 'en' ? 'Pest Control:' : 'कीट नियंत्रण:'}</strong> {t.question12}</li>
+                  <li><strong>{language === 'en' ? 'Staff Status:' : 'कर्मचारी स्थिति:'}</strong> {t.question13}</li>
+                  <li><strong>{language === 'en' ? 'Final Safety:' : 'अंतिम सुरक्षा:'}</strong> {t.question14}</li>
+                  <li><strong>{language === 'en' ? 'Remarks:' : 'टिप्पणियाँ:'}</strong> {t.question15}</li>
+                  <li><strong>{language === 'en' ? 'Kraal / Night Shelter:' : 'क्राल / रात्रि आश्रय:'}</strong> {t.question16}</li>
+                </ol>
+              </div>
+
+              <div className="bg-amber-50 p-3 rounded-lg border border-amber-300">
+                <p className="text-xs text-amber-900">
+                  <strong>{language === 'en' ? '💡 Tip:' : '💡 सुझाव:'}</strong> {language === 'en'
+                    ? 'Use the voice recording below to answer all these questions in one continuous recording. Speak clearly and mention the question numbers as you go.'
+                    : 'नीचे दिए गए वॉयस रिकॉर्डिंग का उपयोग करके इन सभी प्रश्नों का एक निरंतर रिकॉर्डिंग में उत्तर दें। स्पष्ट रूप से बोलें और प्रश्न संख्या का उल्लेख करें।'}
+                </p>
+              </div>
+            </motion.div>
+          )}
         </Card>
 
         {/* Audio Recording */}
