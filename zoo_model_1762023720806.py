@@ -1,5 +1,6 @@
 import os
 import requests
+from typing import Optional
 from pydantic import BaseModel, Field
 from langchain.prompts import PromptTemplate
 from langchain.output_parsers import PydanticOutputParser
@@ -50,7 +51,7 @@ class AnimalMonitoringData(BaseModel):
     # ========== ENCLOSURE (GENERAL) REPORT ==========
     
     # 1. Overall Cleanliness & Waste Management
-    enclosure_cleaning_time: str = Field(..., description="Time when enclosure was cleaned")
+    enclosure_cleaning_time: Optional[str] = Field(None, description="Time when enclosure was cleaned (e.g., '7:00 AM'), or null if not mentioned")
     waste_removed_properly: bool = Field(..., description="Was waste removed and water area cleaned properly?")
     waste_removal_issue: str | None = Field(None, description="Reason if waste not removed properly")
     
@@ -444,20 +445,41 @@ Observation Text: {observation}
     def _create_fallback_data(self, observation_text, date):
         """Return fallback structured data if LLM or transcription fails."""
         return AnimalMonitoringData(
+            # Metadata
             date_or_day=date,
-            animal_observed_on_time=True,
-            clean_drinking_water_provided=True,
-            enclosure_cleaned_properly=True,
-            normal_behaviour_status=True,
-            normal_behaviour_details=None,
-            feed_and_supplements_available=True,
-            feed_given_as_prescribed=True,
-            other_animal_requirements=observation_text,  # Full text, no truncation
-            incharge_signature="Zoo Keeper",
-            daily_animal_health_monitoring=f"Observation recorded on {date}: {observation_text}",  # Full text
-            carnivorous_animal_feeding_chart="Standard feeding schedule followed",
-            medicine_stock_register="Stock levels adequate",
-            daily_wildlife_monitoring=f"Wildlife monitoring completed on {date}"
+            incharge_signature="Zookeeper",
+            # Section A: Animal Health
+            feed_consumption_percentage="Unknown",
+            feed_quantity_consumed="Unknown",
+            water_consumption_normal=True,
+            digestion_problem=False,
+            digestion_problem_details=None,
+            injury_or_illness_noticed=False,
+            animal_weak_or_lethargic=False,
+            health_problem_details=None,
+            activity_level="Normal",
+            alert_and_responsive=True,
+            reproductive_signs_observed=False,
+            reproductive_signs_description=None,
+            critical_condition_observed=False,
+            critical_condition_details=None,
+            pests_noticed=False,
+            safety_risks_noticed=False,
+            safety_risk_details=None,
+            additional_observations=observation_text if observation_text else None,
+            # Enclosure Report
+            enclosure_cleaning_time=None,
+            waste_removed_properly=True,
+            waste_removal_issue=None,
+            water_trough_cleaned=True,
+            fresh_water_available=True,
+            fencing_secure_and_functioning=True,
+            fencing_issue_details=None,
+            moat_condition="Not Applicable",
+            enclosure_pests_noticed=False,
+            staff_attendance_complete=True,
+            all_secured_before_closing=True,
+            enclosure_remarks=None,
         )
 
 
